@@ -1,0 +1,27 @@
+# Smithery.ai configuration
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object,
+      properties:
+        FUTUUR_PUBLIC_KEY :
+          type: string
+        FUTUUR_PRIVATE_KEY:
+          type: string
+      required:
+       - FUTUUR_PUBLIC_KEY
+       - FUTUUR_PRIVATE_KEY
+  commandFunction:
+    # A function that produces the CLI command to start the MCP on stdio.
+    |-
+    (config) => ({
+      "command": "node",
+      "args": [
+        "build/index.js"
+      ],
+      "env": {
+        "FUTUUR_PUBLIC_KEY" : config.FUTUUR_PUBLIC_KEY,
+        "FUTUUR_PRIVATE_KEY" : config.FUTUUR_PRIVATE_KEY
+      }
+    })
