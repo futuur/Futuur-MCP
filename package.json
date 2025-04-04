@@ -1,0 +1,30 @@
+{
+  "name": "futuur-api-mcp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && chmod 755 build/index.js"
+  },
+  "bin": {
+    "futuur-api-mcp": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "crypto": "^1.0.1",
+    "process": "^0.11.10",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.2"
+  }
+}
