@@ -5,6 +5,8 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 
+[![smithery badge](https://smithery.ai/badge/@futuur/futuur-mcp)](https://smithery.ai/server/@futuur/futuur-mcp)
+
 </div>
 
 ## Overview
@@ -26,6 +28,16 @@ Futuur API MCP Integration is a powerful TypeScript-based server that implements
 - npm or yarn package manager
 
 ## Installation
+
+### Installing via Smithery
+
+To install futuur-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@futuur/futuur-mcp):
+
+```bash
+npx -y @smithery/cli install @futuur/futuur-mcp --client claude
+```
+
+### Manual Installation
 
 1. Clone the repository:
 ```bash
