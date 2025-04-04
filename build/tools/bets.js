@@ -96,11 +96,7 @@ export function registerBetTools(server) {
             .enum(["yesno", "custom"])
             .optional()
             .describe("Type of market outcomes"),
-        simulate: z
-            .boolean()
-            .default(true)
-            .describe("Whether to simulate the purchase first"),
-    }, async ({ outcome, amount, shares, currency, position, fiat_equivalent_mode, bet_location, outcomes_type, simulate, }) => {
+    }, async ({ outcome, amount, shares, currency, position, fiat_equivalent_mode, bet_location, outcomes_type, }) => {
         try {
             // At least one of amount or shares must be provided
             if (amount === undefined && shares === undefined) {
@@ -114,27 +110,10 @@ export function registerBetTools(server) {
             if (outcomes_type === "yesno" && position !== "l") {
                 throw new Error("Position must be 'l' (long) for yes/no markets");
             }
-            var requestBody;
-            // If simulate is true, first get the exact purchase parameters
-            if (simulate) {
-                const simulationResult = await simulateBetPurchase(outcome, amount, currency, position);
-                // Use the simulation result as the request body
-                requestBody = simulationResult;
-            }
-            else {
-                // Directly use the provided parameters
-                requestBody = {
-                    outcome,
-                    position,
-                    currency,
-                    fiat_equivalent_mode,
-                    bet_location,
-                };
-                if (amount !== undefined)
-                    requestBody.amount = amount;
-                if (shares !== undefined)
-                    requestBody.shares = shares;
-            }
+            // Always use simulation to get the exact purchase parameters
+            const simulationResult = await simulateBetPurchase(outcome, amount, currency, position);
+            // Use the simulation result as the request body
+            const requestBody = simulationResult;
             const data = await fetchFromFutuur("bets/", {
                 method: "POST",
                 body: requestBody,
