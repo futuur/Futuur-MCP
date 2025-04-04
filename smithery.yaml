@@ -1,0 +1,24 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - futuurPublicKey
+      - futuurPrivateKey
+    properties:
+      futuurPublicKey:
+        type: string
+        description: Your Futuur API public key.
+      futuurPrivateKey:
+        type: string
+        description: Your Futuur API private key.
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({ command: 'node', args: ['build/index.js'], env: { FUTUUR_PUBLIC_KEY: config.futuurPublicKey, FUTUUR_PRIVATE_KEY: config.futuurPrivateKey } })
+  exampleConfig:
+    futuurPublicKey: dummy_public_key
+    futuurPrivateKey: dummy_private_key
