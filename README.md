@@ -29,15 +29,30 @@ Futuur API MCP Integration is a powerful TypeScript-based server that implements
 
 ## Installation
 
-### Installing via Smithery
+### Prerequisites
 
-To install futuur-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@futuur/futuur-mcp):
+1. Install Node.js (LTS version) from [nodejs.org](https://nodejs.org/)
+2. Install one of the following:
+   - [Cursor Editor](https://cursor.sh/)
+   - [Claude Desktop](https://claude.ai/desktop)
 
+### Installation Steps
+
+1. Open your terminal and run one of the following commands based on your editor:
+
+For Claude Desktop:
 ```bash
 npx -y @smithery/cli install @futuur/futuur-mcp --client claude
 ```
 
+For Cursor:
+```bash
+npx -y @smithery/cli install @futuur/futuur-mcp --client cursor
+```
+
 ### Manual Installation
+
+If you prefer to install manually:
 
 1. Clone the repository:
 ```bash
