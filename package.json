@@ -19,12 +19,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.8.0",
-    "crypto": "^1.0.1",
     "express": "^4.18.2",
-    "iconv-lite": "^0.6.3",
-    "process": "^0.11.10",
-    "raw-body": "^2.5.2",
+    "mcp-framework": "^0.2.11",
     "zod": "^3.24.2"
   },
   "devDependencies": {
