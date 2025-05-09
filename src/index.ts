@@ -5,7 +5,7 @@ const server = new MCPServer({
   name: "Futuur API Integration",
   version: "1.0.0",
   transport: {
-    type: "sse",
+    type: "http-stream",
     options: {
       cors: {
         allowOrigin: "*",
@@ -13,6 +13,8 @@ const server = new MCPServer({
     },
   },
 });
+
+
 
 // Connect transport and start server
 server.start();

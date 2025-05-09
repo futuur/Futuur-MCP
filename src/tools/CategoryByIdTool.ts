@@ -7,7 +7,7 @@ interface CategoryByIdInput {
 
 class CategoryByIdTool extends MCPTool<CategoryByIdInput> {
   name = "get_category_by_id";
-  description = "Get a specific category by ID";
+  description = "Get more subcategories for a specific category";
 
   schema = {
     id: {

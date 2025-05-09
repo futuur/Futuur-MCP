@@ -43,7 +43,7 @@ class PlaceBetTool extends MCPTool<PlaceBetInput> {
       description: "Whether to use fiat equivalent mode"
     },
     bet_location: {
-      type: z.string().default("LLM").optional(),
+      type: z.string().default("MCP").optional(),
       description: "Location where the bet was placed"
     },
     outcomes_type: {

@@ -7,7 +7,10 @@ interface CategoriesInput {
 
 class CategoriesTool extends MCPTool<CategoriesInput> {
   name = "get_categories";
-  description = "Get all categories";
+  description = `
+    Get available categories in Futuur
+    Categories are used to categorize bets in Futuur
+  `;
 
   schema = {
     // No schema needed as this tool doesn't take any input

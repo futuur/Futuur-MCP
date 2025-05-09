@@ -14,7 +14,7 @@ class SellBetTool extends MCPTool<SellBetInput> {
 
   schema = {
     id: {
-      type: z.number(),
+      type: z.number().describe(''),
       description: "ID of the bet to sell"
     },
     shares: {
