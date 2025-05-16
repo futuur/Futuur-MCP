@@ -24,7 +24,19 @@ interface MarketsInput {
 
 class MarketsTool extends MCPTool<MarketsInput> {
   name = "get_markets";
-  description = "Get markets with optional filtering";
+  description = `
+    Retrieve and list markets from Futuur, with optional filters such as category, status, and search query, to help you find relevant prediction markets.
+
+    Common use cases:
+    - When the user wants to browse or search for markets.
+    - When filtering markets by category, status, or search query.
+    - When building a market listing or search feature.
+    - When the user asks "What markets are available?" or "Show me open markets in category X."
+
+    Warning: If no filters are provided, the result may be very large.
+    Warning: This tool does not provide detailed information for a single market—use get_market_by_id for that.
+    Warning: Using too many filters may result in no markets being returned.
+  `;
 
   schema = {
     categories: {

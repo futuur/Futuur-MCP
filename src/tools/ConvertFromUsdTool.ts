@@ -9,7 +9,18 @@ interface ConvertFromUsdInput {
 
 class ConvertFromUsdTool extends MCPTool<ConvertFromUsdInput> {
   name = "convert_from_usd";
-  description = "Convert from USD to another currency";
+  description = `
+    Simulate and calculate the amount you would receive when converting a specified USD amount to a target currency, using current exchange rates, without executing the conversion.
+
+    Common use cases:
+    - When the user wants to know how much a USD amount is in another currency.
+    - When displaying currency conversions for bets or balances.
+    - When the user asks "How much is $5 in BTC?"
+
+    Warning: This tool only simulates the conversion; it does not actually transfer or exchange funds.
+    Warning: Both the USD amount and the target currency must be specified.
+    Warning: Exchange rates may fluctuate; always check for the latest rates.
+  `;
 
   schema = {
     value: {

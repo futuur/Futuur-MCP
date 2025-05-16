@@ -7,7 +7,18 @@ interface MarketDetailsInput {
 
 class MarketDetailsTool extends MCPTool<MarketDetailsInput> {
   name = "get_market_details";
-  description = "Get market details by ID";
+  description = `
+    Retrieve detailed information about a specific market by its ID.
+
+    Common use cases:
+    - When the user wants detailed information about a specific market.
+    - When displaying a market's details in a UI.
+    - When the user asks "Show me the details for market X."
+
+    Warning: You must provide a valid market ID; otherwise, the tool will fail.
+    Warning: This tool does not list all markets—use list_markets for that.
+    Warning: If the market ID does not exist, the tool will return an error.
+  `;
 
   schema = {
     id: {

@@ -9,7 +9,18 @@ interface PartialSellAmountInput {
 
 class PartialSellAmountTool extends MCPTool<PartialSellAmountInput> {
   name = "get_partial_sell_amount";
-  description = "Get the amount for a partial sell of a bet";
+  description = `
+    Simulate and calculate the amount you would receive for partially selling a specified number of shares in a bet, without executing the sale.
+
+    Common use cases:
+    - When the user wants to know how much they would receive for selling part of their bet.
+    - When planning a partial sale before actually executing it.
+    - When the user asks "If I sell 10 shares of my bet, how much will I get?"
+
+    Warning: This tool only simulates the amount you would receive; it does not execute the sale.
+    Warning: Both the bet ID and the number of shares to sell must be specified.
+    Warning: Use the actual sell tool to execute a sale after reviewing the simulation.
+  `;
 
   schema = {
     id: {

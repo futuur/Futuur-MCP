@@ -6,8 +6,19 @@ interface CategoryByIdInput {
 }
 
 class CategoryByIdTool extends MCPTool<CategoryByIdInput> {
-  name = "get_category_by_id";
-  description = "Get more subcategories for a specific category";
+  name = "get_category_details";
+  description = `
+    Retrieve details and subcategories for a specific category by its ID
+
+    Common use cases:
+    - When the user wants to see details or subcategories for a specific category.
+    - When building a category navigation or hierarchy.
+    - When the user asks "What's inside category X?" or "Show me subcategories of Y."
+
+    Warning: You must provide a valid category ID; otherwise, the tool will fail.
+    Warning: This tool does not list all categories—use list_categories for that.
+    Warning: If the category ID does not exist, the tool will return an error.
+  `;
 
   schema = {
     id: {

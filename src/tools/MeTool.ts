@@ -8,27 +8,40 @@ interface MeInput {
 
 class MeTool extends MCPTool<MeInput> {
   name = "get_user_profile";
-  description = "Get user profile information";
+  description = `
+    Retrieve the profile information of the user.
 
-  schema = {
-    // No schema needed as this tool doesn't take any input
-  };
+    Common use cases:
+    - When the user wants to see their profile or account information.
+    - When displaying user details in a dashboard or settings page.
+    - When the user asks "What's my profile info?" or "Show my account details."
+
+    Warning: This tool only retrieves the profile of the currently authenticated user.
+    Warning: It cannot be used to update or change profile information.
+    Warning: If the user is not authenticated, the tool will return an error.
+  `;
+
+  schema = {};
 
   async execute() {
     try {
       const data = await fetchFromFutuur("me", {});
       return {
-        content: [{
-          type: "text" as const,
-          text: JSON.stringify(data, null, 2)
-        }]
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify(data, null, 2),
+          },
+        ],
       };
     } catch (error) {
       return {
-        content: [{
-          type: "text" as const,
-          text: `Error fetching user profile: ${String(error)}`
-        }]
+        content: [
+          {
+            type: "text" as const,
+            text: `Error fetching user profile: ${String(error)}`,
+          },
+        ],
       };
     }
   }

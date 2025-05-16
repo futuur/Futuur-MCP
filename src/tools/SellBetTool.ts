@@ -10,7 +10,18 @@ interface SellBetInput {
 
 class SellBetTool extends MCPTool<SellBetInput> {
   name = "sell_bet";
-  description = "Sell a bet (full or partial)";
+  description = `
+    Sell all or part of a bet by specifying the bet ID and optional shares or amount.
+
+    Common use cases:
+    - When the user wants to sell all or part of a bet after reviewing a simulation.
+    - When executing a sale after previewing the amount to be received.
+    - When the user says "Yes, sell my shares" after seeing a simulation.
+
+    Warning: This tool executes a real sale of your bet; ensure you have simulated and confirmed before using.
+    Warning: Once executed, sales cannot be undone or reversed.
+    Warning: Incomplete or invalid parameters (e.g., missing bet ID) will cause the tool to fail.
+  `;
 
   schema = {
     id: {

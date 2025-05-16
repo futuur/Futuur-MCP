@@ -8,7 +8,18 @@ interface RatesInput {
 
 class RatesTool extends MCPTool<RatesInput> {
   name = "get_exchange_rates";
-  description = "Get current exchange rates";
+  description = `
+    Retrieve the latest exchange rates for supported currencies.
+
+    Common use cases:
+    - When the user wants to see current exchange rates for supported currencies.
+    - When displaying conversion rates in a UI.
+    - When the user asks "What are the current exchange rates?"
+
+    Warning: This tool only provides current exchange rates; it does not perform any currency conversion.
+    Warning: Rates are subject to change and may not reflect real-time market conditions.
+    Warning: Historical rates are not available through this tool.
+  `;
 
   schema = {
     base_currency: {

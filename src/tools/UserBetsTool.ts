@@ -15,7 +15,18 @@ interface UserBetsInput {
 
 class UserBetsTool extends MCPTool<UserBetsInput> {
   name = "get_user_bets";
-  description = "Get user bets with optional filtering";
+  description = `
+    Retrieve a list of bets placed by a user, with optional filters for status, currency, and market.
+
+    Common use cases:
+    - When the user wants to see their betting history or active bets.
+    - When displaying a list of bets in a dashboard or profile.
+    - When the user asks "Show me my bets" or "What bets have I placed?"
+
+    Warning: This tool may return a large result set if no filters are applied.
+    Warning: It does not provide detailed information for a single bet—use a bet detail tool for that.
+    Warning: If required parameters are missing, the tool may fail or return incomplete results.
+  `;
 
   schema = {
     limit: {

@@ -15,7 +15,18 @@ interface PlaceBetInput {
 
 class PlaceBetTool extends MCPTool<PlaceBetInput> {
   name = "place_bet";
-  description = "Place a bet on a market outcome";
+  description = `
+    Place a bet on a specific market outcome, specifying amount, shares, currency, and position, and receive confirmation of the bet placement.
+
+    Common use cases:
+    - When the user has reviewed a simulation and confirmed they want to place a bet.
+    - When executing a bet after previewing the outcome and cost.
+    - When the user says "Yes, place the bet" after seeing a simulation.
+
+    Warning: This tool executes a real bet; ensure you have simulated and confirmed before using.
+    Warning: Once executed, bets cannot be undone or reversed.
+    Warning: Incomplete or invalid parameters (e.g., missing amount or shares) will cause the tool to fail.
+  `;
 
   schema = {
     outcome: {
