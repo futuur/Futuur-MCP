@@ -133,7 +133,11 @@ class MarketsTool extends MCPTool<MarketsInput> {
         queryParams.append("status", input.status);
 
       const url = `https://api.futuur.com/api/v1/markets?${queryParams.toString()}`;
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)"
+        }
+      });
 
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);

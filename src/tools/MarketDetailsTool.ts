@@ -29,7 +29,11 @@ class MarketDetailsTool extends MCPTool<MarketDetailsInput> {
 
   async execute(input: MarketDetailsInput) {
     try {
-      const response = await fetch(`https://api.futuur.com/api/v1/markets/${input.id}`);
+      const response = await fetch(`https://api.futuur.com/api/v1/markets/${input.id}`, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)"
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);

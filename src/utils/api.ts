@@ -97,16 +97,19 @@ export async function fetchFromFutuur(
   // Prepare headers
   let headers: Record<string, string> = {};
 
+  // Always add User-Agent header
+  headers["User-Agent"] = "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)";
+
   // Handle authentication
   if (!isPublicEndpoint) {
     if (useHmac && apiConfig.publicKey && apiConfig.privateKey) {
       // Use HMAC authentication
-      headers = buildHeaders(
+      headers = { ...headers, ...buildHeaders(
         method.toUpperCase() === "GET" ? queryParams : body || {}
-      );
+      ) };
     } else if (token) {
       // Fallback to token authentication
-      headers["Authorization"] = `Bearer ${token}`;
+      headers = { ...headers, Authorization: `Bearer ${token}` };
     }
   }
 

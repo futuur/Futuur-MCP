@@ -28,7 +28,11 @@ class CategoriesTool extends MCPTool<CategoriesInput> {
 
   async execute() {
     try {
-      const response = await fetch("https://api.futuur.com/api/v1/categories");
+      const response = await fetch("https://api.futuur.com/api/v1/categories", {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)"
+        }
+      });
 
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
