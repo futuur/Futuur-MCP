@@ -51,7 +51,8 @@ class MarketsTool extends MCPTool<MarketsInput> {
     },
     currency_mode: {
       type: z.enum(["play_money", "real_money"]).default("play_money"),
-      description: "Currency mode: play_money or real_money",
+      description:
+        "Currency mode. Only the following values are allowed: 'play_money', 'real_money'.",
     },
     hide_my_bets: {
       type: z.boolean().default(false),
@@ -91,7 +92,8 @@ class MarketsTool extends MCPTool<MarketsInput> {
           "-volume",
         ])
         .default(""),
-      description: "Field to order results by",
+      description:
+        "Field to order results by. Only the following values are allowed: '', 'relevance', '-created_on', 'bet_end_date', '-wagers_count', '-volume'. Use '-volume' for ordering by volume. There is no '-real-volume' option.",
     },
     resolved_only: {
       type: z.boolean().default(false),
@@ -107,7 +109,8 @@ class MarketsTool extends MCPTool<MarketsInput> {
     },
     status: {
       type: z.enum(["open", "closed", "resolved"]).optional(),
-      description: "Filter markets by status",
+      description:
+        "Filter markets by status. Only the following values are allowed: 'open', 'closed', 'resolved'.",
     },
   } as any;
 
