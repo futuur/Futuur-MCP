@@ -30,11 +30,17 @@ class UserBetsTool extends MCPTool<UserBetsInput> {
 
   schema = {
     limit: {
-      type: z.number(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number()
+      ),
       description: "Maximum number of bets to return"
     },
     offset: {
-      type: z.number(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number()
+      ),
       description: "Offset for pagination"
     },
     active: {
@@ -54,14 +60,20 @@ class UserBetsTool extends MCPTool<UserBetsInput> {
       description: "Filter by not active wagers (wagers with status sold, won, lost, disabled)"
     },
     question: {
-      type: z.number().optional(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number().optional()
+      ),
       description: "Filter by question ID"
     },
     user: {
-      type: z.number().optional(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number().optional()
+      ),
       description: "Filter by user ID"
     }
-  };
+  } as any;
 
   async execute(input: UserBetsInput) {
     try {

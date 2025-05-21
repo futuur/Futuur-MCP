@@ -40,7 +40,13 @@ class MarketsTool extends MCPTool<MarketsInput> {
 
   schema = {
     categories: {
-      type: z.array(z.number()).optional(),
+      type: z.preprocess(
+        (val) =>
+          Array.isArray(val)
+            ? val.map((v) => (typeof v === "string" ? parseInt(v, 10) : v))
+            : val,
+        z.array(z.number()).optional()
+      ),
       description: "Array of category IDs to filter markets",
     },
     currency_mode: {
@@ -52,7 +58,10 @@ class MarketsTool extends MCPTool<MarketsInput> {
       description: "Whether to hide markets the user has bet on",
     },
     limit: {
-      type: z.number().optional(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number().optional()
+      ),
       description: "Number of results to return per page",
     },
     live: {
@@ -60,7 +69,10 @@ class MarketsTool extends MCPTool<MarketsInput> {
       description: "Filter for live markets only",
     },
     offset: {
-      type: z.number().optional(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number().optional()
+      ),
       description: "The initial index from which to return the results",
     },
     only_markets_i_follow: {
@@ -97,7 +109,7 @@ class MarketsTool extends MCPTool<MarketsInput> {
       type: z.enum(["open", "closed", "resolved"]).optional(),
       description: "Filter markets by status",
     },
-  };
+  } as any;
 
   async execute(input: MarketsInput) {
     try {
@@ -135,8 +147,9 @@ class MarketsTool extends MCPTool<MarketsInput> {
       const url = `https://api.futuur.com/api/v1/markets?${queryParams.toString()}`;
       const response = await fetch(url, {
         headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)"
-        }
+          "User-Agent":
+            "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)",
+        },
       });
 
       if (!response.ok) {

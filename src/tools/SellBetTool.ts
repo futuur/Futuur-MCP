@@ -25,18 +25,27 @@ class SellBetTool extends MCPTool<SellBetInput> {
 
   schema = {
     id: {
-      type: z.number().describe(''),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number()
+      ),
       description: "ID of the bet to sell"
     },
     shares: {
-      type: z.number().optional(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseFloat(val) : val),
+        z.number().optional()
+      ),
       description: "Number of shares to sell (for partial sell)"
     },
     amount: {
-      type: z.number().optional(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseFloat(val) : val),
+        z.number().optional()
+      ),
       description: "Amount to receive (for partial sell)"
     }
-  };
+  } as any;
 
   async execute(input: SellBetInput) {
     try {

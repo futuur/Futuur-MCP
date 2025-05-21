@@ -22,10 +22,13 @@ class MarketDetailsTool extends MCPTool<MarketDetailsInput> {
 
   schema = {
     id: {
-      type: z.number(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number()
+      ),
       description: "A unique integer value identifying this market"
     }
-  };
+  } as any;
 
   async execute(input: MarketDetailsInput) {
     try {

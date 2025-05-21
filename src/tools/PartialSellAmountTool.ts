@@ -24,14 +24,20 @@ class PartialSellAmountTool extends MCPTool<PartialSellAmountInput> {
 
   schema = {
     id: {
-      type: z.number(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number()
+      ),
       description: "ID of the bet"
     },
     shares: {
-      type: z.number(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseFloat(val) : val),
+        z.number()
+      ),
       description: "Number of shares to sell"
     }
-  };
+  } as any;
 
   async execute(input: PartialSellAmountInput) {
     try {

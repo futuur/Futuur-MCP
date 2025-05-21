@@ -24,14 +24,17 @@ class ConvertToUsdTool extends MCPTool<ConvertToUsdInput> {
 
   schema = {
     value: {
-      type: z.number().positive(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseFloat(val) : val),
+        z.number().positive()
+      ),
       description: "Amount to convert to USD"
     },
     from_currency: {
       type: z.string(),
       description: "Source currency code"
     }
-  };
+  } as any;
 
   async execute(input: ConvertToUsdInput) {
     try {

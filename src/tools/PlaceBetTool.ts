@@ -30,15 +30,24 @@ class PlaceBetTool extends MCPTool<PlaceBetInput> {
 
   schema = {
     outcome: {
-      type: z.number(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.number()
+      ),
       description: "ID of the outcome to bet on"
     },
     amount: {
-      type: z.number().positive().optional(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseFloat(val) : val),
+        z.number().positive().optional()
+      ),
       description: "Amount to bet (must be positive)"
     },
     shares: {
-      type: z.number().optional(),
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? parseFloat(val) : val),
+        z.number().optional()
+      ),
       description: "Number of shares to purchase"
     },
     currency: {
@@ -61,7 +70,7 @@ class PlaceBetTool extends MCPTool<PlaceBetInput> {
       type: z.enum(["yesno", "custom"]).optional(),
       description: "Type of market outcomes"
     }
-  };
+  } as any;
 
   async execute(input: PlaceBetInput) {
     try {
