@@ -25,13 +25,14 @@ interface MarketsInput {
 class MarketsTool extends MCPTool<MarketsInput> {
   name = "get_markets";
   description = `
-    Retrieve and list markets from Futuur, with optional filters such as category, status, and search query, to help you find relevant prediction markets.
+    Retrieve and list markets from Futuur, with optional filters such as category, status, and search query, to help you find relevant prediction markets. By default, it will show play money and real money odds (outcomes prices).
 
     Common use cases:
     - When the user wants to browse or search for markets.
     - When filtering markets by category, status, or search query.
     - When building a market listing or search feature.
     - When the user asks "What markets are available?" or "Show me open markets in category X or get me the top 10 markets by volume or fetch me the top 5 markets in crypto"
+  
 
     Warning: If no filters are provided, the result may be very large.
     Warning: This tool does not provide detailed information for a single market—use get_market_by_id for that.
