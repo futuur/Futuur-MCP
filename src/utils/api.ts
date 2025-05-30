@@ -161,22 +161,42 @@ export async function fetchFromFutuur(
 }
 
 // Helper for simulating bet purchases
-export async function simulateBetPurchase(
-  outcome: number,
-  amount?: number,
-  currency: string = "OOM",
-  position: "l" | "s" = "l"
-) {
-  const params: Record<string, any> = {
+// New interface for params
+export interface SimulateBetPurchaseParams {
+  outcome: number;
+  currency?: string;
+  position?: "l" | "s";
+  amount?: number;
+  shares?: number;
+}
+
+export async function simulateBetPurchase(params: SimulateBetPurchaseParams) {
+  const {
+    outcome,
+    currency = "OOM",
+    position = "l",
+    amount,
+    shares,
+  } = params;
+
+  const apiCallParams: Record<string, any> = {
     outcome,
     currency,
     position,
   };
 
-  if (amount !== undefined) params.amount = amount;
+  if (amount !== undefined) {
+    apiCallParams.amount = amount;
+  } else if (shares !== undefined) {
+    // The API expects 'amount' or 'shares'. The tool's Zod schema ensures only one is practically sent.
+    apiCallParams.shares = shares;
+  }
+  // If neither is provided, the API's default behavior for simulate_purchase will apply.
+  // The calling tool's Zod schema should enforce that at least one is provided by the user.
 
   return fetchFromFutuur("bets/simulate_purchase/", {
-    params,
-    useHmac: true,
+    params: apiCallParams,
+    method: "GET", // Explicitly state GET
+    useHmac: true, // This endpoint requires authentication
   });
 }

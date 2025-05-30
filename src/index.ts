@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config(); // Load .env file at the very beginning
+
 import { MCPServer } from "mcp-framework";
 
 // Create MCP server instance
