@@ -1,43 +1,46 @@
 // Common API utilities can go here
 import crypto from "crypto";
+import dotenv from "dotenv";
+
+// Ensure environment variables are loaded
+dotenv.config();
 
 interface FutuurApiConfig {
   publicKey?: string;
   privateKey?: string;
 }
 
-// Global configuration that can be set at app initialization
-let apiConfig: FutuurApiConfig = {
-  publicKey: process.env.FUTUUR_PUBLIC_KEY,
-  privateKey: process.env.FUTUUR_PRIVATE_KEY,
-};
+// Legacy global configuration (keeping for backward compatibility)
+let apiConfig: FutuurApiConfig = {};
 
-export function configureFutuurApi(config: FutuurApiConfig) {
-  apiConfig = {
-    ...apiConfig,
-    ...config,
-  };
-}
+// STATELESS AUTH BUILDER - reads env every time, no config persistence issues
+export function buildAuthHeaders(
+  payload: Record<string, unknown>
+): Record<string, string> {
+  // Force reload environment to ensure keys are available
+  dotenv.config();
+  
+  const key = process.env.FUTUUR_PUBLIC_KEY;
+  const secret = process.env.FUTUUR_PRIVATE_KEY;
+  
+  if (!key || !secret) {
+    throw new Error(`Futuur keys missing in env: key=${!!key}, secret=${!!secret}`);
+  }
 
-// Use Node.js crypto
-function buildSignature(
-  params: Record<string, any>,
-  privateKey: string
-): { hmac: string; timestamp: number } {
   const timestamp = Math.floor(Date.now() / 1000);
-
-  // Add key and timestamp to params
+  
+  // Build signature parameters
   const paramsToSign = {
-    ...params,
-    Key: apiConfig.publicKey,
+    ...payload,
+    Key: key,
     Timestamp: timestamp,
   };
 
   // Sort params alphabetically
   const sortedParams = Object.keys(paramsToSign)
     .sort()
-    .reduce((acc, key) => {
-      acc[key] = paramsToSign[key as keyof typeof paramsToSign];
+    .reduce((acc, paramKey) => {
+      acc[paramKey] = paramsToSign[paramKey as keyof typeof paramsToSign];
       return acc;
     }, {} as Record<string, any>);
 
@@ -46,115 +49,127 @@ function buildSignature(
     sortedParams as Record<string, string>
   ).toString();
 
-  // Generate HMAC using Node.js crypto
-  // Try with the raw privateKey first
+  // Generate HMAC
   const hmac = crypto
-    .createHmac("sha512", privateKey)
+    .createHmac("sha512", secret)
     .update(paramString)
     .digest("hex");
 
-  return { hmac, timestamp };
-}
-
-function buildHeaders(params: Record<string, any>): Record<string, string> {
-  if (!apiConfig.publicKey || !apiConfig.privateKey) {
-    return {};
-  }
-
-  const signature = buildSignature(params, apiConfig.privateKey);
+  console.error('[AUTH] Generated headers for keys:', key.slice(0, 6), 'payload keys:', Object.keys(payload));
 
   return {
-    Key: apiConfig.publicKey,
-    Timestamp: signature.timestamp.toString(),
-    HMAC: signature.hmac,
+    Key: key,
+    Timestamp: timestamp.toString(),
+    HMAC: hmac,
   };
 }
 
+// Function to get current config, loading from env if not already set
+function getCurrentConfig(): FutuurApiConfig {
+  if (!apiConfig.publicKey || !apiConfig.privateKey) {
+    // Force reload environment variables
+    dotenv.config();
+    apiConfig = {
+      publicKey: process.env.FUTUUR_PUBLIC_KEY,
+      privateKey: process.env.FUTUUR_PRIVATE_KEY,
+    };
+    
+    // Debug logging to track when config is loaded
+    console.error('[API CONFIG] Loaded keys:', !!apiConfig.publicKey, !!apiConfig.privateKey);
+  }
+  return apiConfig;
+}
+
+// Export for debugging
+export function getApiConfig() {
+  return { ...getCurrentConfig() };
+}
+
+export function configureFutuurApi(config: FutuurApiConfig) {
+  console.error('[API CONFIG] Explicit configuration called:', !!config.publicKey, !!config.privateKey);
+  apiConfig = {
+    ...apiConfig,
+    ...config,
+  };
+}
+
+// NEW DEFINITIVE FETCH HELPER - Authentication built-in, no global dependency
 export async function fetchFromFutuur(
   endpoint: string,
-  options: {
+  {
+    params = {},
+    method = 'GET',
+    body,
+  }: {
     params?: Record<string, any>;
-    token?: string; // Keep for backward compatibility
-    method?: string;
+    method?: 'GET' | 'POST' | 'PATCH';
     body?: any;
-    useHmac?: boolean; // Flag to use HMAC auth instead of token
   } = {}
 ) {
-  const { params = {}, token, method = "GET", body, useHmac = true } = options;
-  const baseUrl = "https://api.futuur.com/api/v1";
-
-  // Determine if this endpoint requires authentication
-  const publicEndpoints = ["questions", "categories"];
-
-  const isPublicEndpoint = publicEndpoints.some(
-    (prefix) => endpoint.startsWith(prefix) || endpoint === prefix
-  );
-
-  // Build URL with query parameters
-  let url = `${baseUrl}/${endpoint}`;
-  let queryParams: Record<string, any> = { ...params };
-
-  // Prepare headers
-  let headers: Record<string, string> = {};
-
-  // Always add User-Agent header
-  headers["User-Agent"] = "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)";
-
-  // Handle authentication
-  if (!isPublicEndpoint) {
-    if (useHmac && apiConfig.publicKey && apiConfig.privateKey) {
-      // Use HMAC authentication
-      headers = { ...headers, ...buildHeaders(
-        method.toUpperCase() === "GET" ? queryParams : body || {}
-      ) };
-    } else if (token) {
-      // Fallback to token authentication
-      headers = { ...headers, Authorization: `Bearer ${token}` };
-    }
-  }
-
-  // Add content type for requests with body
-  if (body) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  // Build query string
-  if (Object.keys(queryParams).length > 0) {
-    const searchParams = new URLSearchParams();
-    Object.entries(queryParams).forEach(([key, value]) => {
-      if (value !== undefined) {
-        if (Array.isArray(value)) {
-          value.forEach((v) => searchParams.append(key, v.toString()));
-        } else {
-          searchParams.append(key, value.toString());
-        }
+  // ① Compose URL & payload
+  const base = 'https://api.futuur.com/api/v1/';
+  const url = new URL(endpoint, base);
+  
+  // Add query parameters to URL
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      if (Array.isArray(value)) {
+        value.forEach(v => url.searchParams.append(key, String(v)));
+      } else {
+        url.searchParams.append(key, String(value));
       }
-    });
-
-    const queryString = searchParams.toString();
-    if (queryString) {
-      url += `?${queryString}`;
     }
+  });
+
+  // Determine payload for signature (what gets signed)
+  const signaturePayload = method === 'GET' 
+    ? Object.fromEntries(url.searchParams.entries())
+    : body || {};
+
+  // ② Attach auth headers for every non-public call
+  const publicPrefixes = ['questions', 'categories'];
+  const isPublic = publicPrefixes.some(prefix => 
+    endpoint.startsWith(prefix) || endpoint.includes(`/${prefix}`)
+  );
+  
+  let headers: Record<string, string> = {
+    'User-Agent': 'Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)'
+  };
+
+  if (!isPublic) {
+    // Generate auth headers based on actual request payload
+    const authHeaders = buildAuthHeaders(signaturePayload);
+    headers = { ...headers, ...authHeaders };
+    console.error(`[FETCH] Auth headers added for ${endpoint}, payload keys:`, Object.keys(signaturePayload));
   }
 
-  // Prepare fetch options
+  if (method === 'POST' || method === 'PATCH') {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  // ③ Fire request
   const fetchOptions: RequestInit = {
     method,
     headers,
   };
 
-  if (body) {
+  if (body && (method === 'POST' || method === 'PATCH')) {
     fetchOptions.body = JSON.stringify(body);
   }
 
-  // Make the request
-  const response = await fetch(url, fetchOptions);
+  console.error(`[FETCH] Making ${method} request to ${url.toString()}`);
+  
+  const response = await fetch(url.toString(), fetchOptions);
+  
   if (!response.ok) {
-    throw new Error(
-      JSON.stringify({ ...fetchOptions, response: response.status, url })
-    );
-
-    // throw new Error(`API request failed with status ${response.status}`);
+    const errorDetails = {
+      status: response.status,
+      statusText: response.statusText,
+      url: url.toString(),
+      method,
+      headers: Object.keys(headers)
+    };
+    throw new Error(`Futuur API ${response.status} for ${endpoint}: ${JSON.stringify(errorDetails)}`);
   }
 
   return response.json();
@@ -188,15 +203,19 @@ export async function simulateBetPurchase(params: SimulateBetPurchaseParams) {
   if (amount !== undefined) {
     apiCallParams.amount = amount;
   } else if (shares !== undefined) {
-    // The API expects 'amount' or 'shares'. The tool's Zod schema ensures only one is practically sent.
     apiCallParams.shares = shares;
   }
-  // If neither is provided, the API's default behavior for simulate_purchase will apply.
-  // The calling tool's Zod schema should enforce that at least one is provided by the user.
 
   return fetchFromFutuur("bets/simulate_purchase/", {
     params: apiCallParams,
-    method: "GET", // Explicitly state GET
-    useHmac: true, // This endpoint requires authentication
+    method: "GET",
+  });
+}
+
+// Helper for placing bets
+export async function placeBet(payload: Record<string, any>) {
+  return fetchFromFutuur("bets/", {
+    method: "POST",
+    body: payload,
   });
 }
