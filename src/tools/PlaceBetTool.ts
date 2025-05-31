@@ -1,7 +1,7 @@
-import { MCPTool } from "mcp-framework";
 import { z } from "zod";
-import { fetchFromFutuur, SimulateBetPurchaseParams } from "../utils/api.js";
-import { SIMULATION_PAYLOAD_SOURCE_MARKER } from "../utils/toolConstants";
+import { placeBet } from "../utils/api.js";
+import { SIMULATION_PAYLOAD_SOURCE_MARKER } from "../utils/toolConstants.js";
+import { FutuurBaseTool } from "./FutuurBaseTool.js";
 
 // Define the structure of the payload expected from the simulation service
 // This should match the BetPrice schema from OpenAPI / output of simulateBetPurchase
@@ -18,15 +18,12 @@ const ConfirmedSimulationPayloadSchema = z.object({
   // For now, assuming simulationData mostly contains these core fields.
 });
 
-interface PlaceBetConfirmedInput {
-  // This object structure should match the output of simulateBetPurchase
-  confirmed_simulation_payload: z.infer<typeof ConfirmedSimulationPayloadSchema>;
-  bet_location?: string; // Optional: Location where the bet was placed
-  // fiat_equivalent_mode is likely handled by the simulation or part of its response, not a separate flag here.
-  // outcomes_type is also likely implicitly handled or part of simulation context, not needed for POST if payload is complete.
+interface PlaceBetExecuteInput {
+  confirmed_simulation_payload: Record<string, any>;
+  bet_location?: string;
 }
 
-class PlaceBetTool extends MCPTool<PlaceBetConfirmedInput> {
+class PlaceBetTool extends FutuurBaseTool<PlaceBetExecuteInput> {
   name = "place_bet";
   description = `
     Place a bet on a market using a previously confirmed simulation payload.
@@ -42,12 +39,18 @@ class PlaceBetTool extends MCPTool<PlaceBetConfirmedInput> {
     Warning: Once executed, bets cannot be undone or reversed.
   `;
 
-  schema = z.object({
-    confirmed_simulation_payload: ConfirmedSimulationPayloadSchema.describe("The exact JSON object payload returned by the 'get_bet_simulation' tool. This contains all necessary details like outcome, amount, shares, currency, and position as confirmed by the simulation and should match the Futuur API's BetPurchase schema."),
-    bet_location: z.string().default("MCP").optional().describe("Identifier for the location/interface placing the bet (e.g., 'MCP', 'WebAppV2'). This parameter is for MCP internal use if needed and is not sent to the Futuur API.")
-  }) as any; // Consistent with other tools
+  schema = {
+    confirmed_simulation_payload: {
+      type: ConfirmedSimulationPayloadSchema,
+      description: "The exact JSON object payload returned by the 'get_bet_simulation' tool. This contains all necessary details like outcome, amount, shares, currency, and position as confirmed by the simulation and should match the Futuur API's BetPurchase schema."
+    },
+    bet_location: {
+      type: z.string().default("MCP").optional(),
+      description: "Identifier for the location/interface placing the bet (e.g., 'MCP', 'WebAppV2'). This parameter is for MCP internal use if needed and is not sent to the Futuur API."
+    }
+  } as any; // Consistent with other tools
 
-  async execute(input: PlaceBetConfirmedInput) {
+  async execute(input: PlaceBetExecuteInput) {
     try {
       // The `confirmed_simulation_payload` is the direct output from the 'get_bet_simulation' tool.
       // It includes our `tool_source` marker for validation and the actual simulation data.
@@ -55,11 +58,7 @@ class PlaceBetTool extends MCPTool<PlaceBetConfirmedInput> {
       // `apiRequestBody` now contains only the fields intended for the Futuur API (outcome, amount, shares, etc.)
       // and excludes our internal `tool_source` marker.
 
-      const data = await fetchFromFutuur("bets/", {
-        method: "POST",
-        body: apiRequestBody, // Send the stripped payload to Futuur API
-        useHmac: true,
-      });
+      const data = await placeBet(apiRequestBody);
 
       return {
         content: [

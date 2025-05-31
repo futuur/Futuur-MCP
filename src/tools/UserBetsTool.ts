@@ -1,6 +1,6 @@
-import { MCPTool } from "mcp-framework";
 import { z } from "zod";
 import { fetchFromFutuur } from "../utils/api.js";
+import { FutuurBaseTool } from "./FutuurBaseTool.js";
 
 interface UserBetsInput {
   limit: number;
@@ -13,7 +13,7 @@ interface UserBetsInput {
   user?: number;
 }
 
-class UserBetsTool extends MCPTool<UserBetsInput> {
+class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
   name = "get_user_bets";
   description = `
     Retrieve a list of bets placed by a user, with optional filters for status, currency, and market.

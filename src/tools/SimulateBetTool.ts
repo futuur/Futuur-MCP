@@ -1,8 +1,7 @@
-import { MCPTool } from "mcp-framework";
-import { z, ZodIssueCode, RefinementCtx } from "zod";
-// Uses the refactored/enhanced simulateBetPurchase function
-import { simulateBetPurchase, SimulateBetPurchaseParams } from "../utils/api"; // .js or .ts extension might be handled by resolver
-import { SIMULATION_PAYLOAD_SOURCE_MARKER } from "../utils/toolConstants";
+import { z } from "zod";
+import { simulateBetPurchase, SimulateBetPurchaseParams } from "../utils/api.js";
+import { SIMULATION_PAYLOAD_SOURCE_MARKER } from "../utils/toolConstants.js";
+import { FutuurBaseTool } from "./FutuurBaseTool.js";
 
 // Interface for validated & structured input to the execute method
 interface SimulateBetExecuteInput {
@@ -13,7 +12,7 @@ interface SimulateBetExecuteInput {
   shares?: number;
 }
 
-class SimulateBetTool extends MCPTool<SimulateBetExecuteInput> {
+class SimulateBetTool extends FutuurBaseTool<SimulateBetExecuteInput> {
   name = "get_bet_simulation";
   description = `
 Simulates a bet purchase on a specific market outcome without actually placing the bet.
@@ -39,42 +38,56 @@ Warning: You must provide either 'amount' or 'shares'. If neither or both are pr
 The API will determine the missing value (amount or shares) based on the one provided.
   `;
 
-  schema = z.object({
-    outcome: z.preprocess(
-      (val: unknown) => (typeof val === 'string' ? parseInt(val, 10) : val),
-      z.number({ required_error: "Outcome ID (outcome) is required." })
-    ).describe("ID of the market outcome to simulate a bet on."),
-    currency: z.string().max(11).default("OOM").describe("Currency for the simulation (e.g., 'OOM', 'USD')."),
-    position: z.enum(["l", "s"]).default("l").describe("Bet position: 'l' for long (in favor), 's' for short (against)."),
-    amount: z.preprocess(
-      (val: unknown) => (val === "" || val === null ? undefined : val),
-      z.string().transform((val: string) => parseFloat(val)).pipe(z.number().positive("Amount, if provided, must be a positive number.")).optional()
-    ).describe("Monetary amount to simulate spending. Provide this OR shares."),
-    shares: z.preprocess(
-      (val: unknown) => (val === "" || val === null ? undefined : val),
-      z.string().transform((val: string) => parseFloat(val)).pipe(z.number().positive("Shares, if provided, must be a positive number.")).optional()
-    ).describe("Number of shares to simulate purchasing. Provide this OR amount."),
-  }).superRefine((data: SimulateBetExecuteInput, ctx: RefinementCtx) => {
-    const amountProvided = data.amount !== undefined;
-    const sharesProvided = data.shares !== undefined;
-
-    if (!amountProvided && !sharesProvided) {
-      ctx.addIssue({
-        code: ZodIssueCode.custom,
-        message: "Either 'amount' or 'shares' must be provided for the simulation.",
-        path: ["amount"],
-      });
-    } else if (amountProvided && sharesProvided) {
-      ctx.addIssue({
-        code: ZodIssueCode.custom,
-        message: "Please provide either 'amount' or 'shares' for the simulation, not both.",
-        path: ["amount"],
-      });
+  schema = {
+    outcome: {
+      type: z.preprocess(
+        (val: unknown) => (typeof val === 'string' ? parseInt(val, 10) : val),
+        z.number({ required_error: "Outcome ID (outcome) is required." })
+      ),
+      description: "ID of the market outcome to simulate a bet on."
+    },
+    currency: {
+      type: z.string().max(11).default("OOM"),
+      description: "Currency for the simulation (e.g., 'OOM', 'USD')."
+    },
+    position: {
+      type: z.enum(["l", "s"]).default("l"),
+      description: "Bet position: 'l' for long (in favor), 's' for short (against)."
+    },
+    amount: {
+      type: z.number().positive().optional(),
+      description: "Monetary amount to simulate spending. Provide this OR shares."
+    },
+    shares: {
+      type: z.number().positive().optional(),
+      description: "Number of shares to simulate purchasing. Provide this OR amount."
     }
-  }) as any;
+  } as any;
 
   async execute(input: SimulateBetExecuteInput) {
     try {
+      // Custom validation: ensure either amount or shares is provided, but not both
+      const amountProvided = input.amount !== undefined;
+      const sharesProvided = input.shares !== undefined;
+
+      if (!amountProvided && !sharesProvided) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: "Error: Either 'amount' or 'shares' must be provided for the simulation."
+          }]
+        };
+      }
+
+      if (amountProvided && sharesProvided) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: "Error: Please provide either 'amount' or 'shares' for the simulation, not both."
+          }]
+        };
+      }
+
       const apiParams: SimulateBetPurchaseParams = {
         outcome: input.outcome,
         currency: input.currency,
@@ -105,20 +118,11 @@ The API will determine the missing value (amount or shares) based on the one pro
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      let finalErrorMessage = errorMessage;
-      try {
-        const parsedError = JSON.parse(errorMessage);
-        if (parsedError && parsedError.url && parsedError.response) {
-          finalErrorMessage = `API Error: Status ${parsedError.response} for ${parsedError.url}. Details: ${JSON.stringify(parsedError.fetchOptions)}`;
-        }
-      } catch (e) {
-        // Not a JSON error string, use original
-      }
       return {
         content: [
           {
             type: "text" as const,
-            text: `Error simulating bet purchase: ${finalErrorMessage}`,
+            text: `Error simulating bet purchase: ${errorMessage}`,
           },
         ],
       };

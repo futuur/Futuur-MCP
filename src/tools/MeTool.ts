@@ -1,12 +1,12 @@
-import { MCPTool } from "mcp-framework";
 import { z } from "zod";
 import { fetchFromFutuur } from "../utils/api.js";
+import { FutuurBaseTool } from "./FutuurBaseTool.js";
 
 interface MeInput {
   // No input parameters needed for this tool
 }
 
-class MeTool extends MCPTool<MeInput> {
+class MeTool extends FutuurBaseTool<MeInput> {
   name = "get_user_profile";
   description = `
     Retrieve the profile information of the user.
@@ -25,7 +25,7 @@ class MeTool extends MCPTool<MeInput> {
 
   async execute() {
     try {
-      const data = await fetchFromFutuur("me", {});
+      const data = await fetchFromFutuur("me");
       return {
         content: [
           {
