@@ -1,13 +1,13 @@
-import { MCPTool } from "mcp-framework";
 import { z } from "zod";
 import { fetchFromFutuur } from "../utils/api.js";
+import { FutuurBaseTool } from "./FutuurBaseTool.js";
 
 interface PartialSellAmountInput {
   id: number;
   shares: number;
 }
 
-class PartialSellAmountTool extends MCPTool<PartialSellAmountInput> {
+class PartialSellAmountTool extends FutuurBaseTool<PartialSellAmountInput> {
   name = "get_partial_sell_amount";
   description = `
     Simulate and calculate the amount you would receive for partially selling a specified number of shares in a bet, without executing the sale.

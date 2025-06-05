@@ -27,6 +27,25 @@ class MarketsTool extends MCPTool<MarketsInput> {
   description = `
     Retrieve and list markets from Futuur, with optional filters such as category, status, and search query, to help you find relevant prediction markets. By default, it will show play money and real money odds (outcomes prices).
 
+    The tool will return a list of markets with the following markdown format:
+
+    ## 1. {Market Title}
+
+    **Chances:**
+    - Real Money: {percentage}% (\${price})
+    - Play Money: {percentage}% (ø{price})
+
+    **Trading Volume:**
+    - Real Money: \${amount}
+    - Play Money: ø{amount}
+
+    **Betting ends:** {formatted date}
+
+    ---
+
+    ## 2. {Next Market Title}
+    ...
+
     Common use cases:
     - When the user wants to browse or search for markets.
     - When filtering markets by category, status, or search query.
@@ -41,51 +60,8 @@ class MarketsTool extends MCPTool<MarketsInput> {
 
   schema = {
     categories: {
-      type: z.preprocess((val) => {
-        // Handle empty string
-        if (val === "" || val === null || val === undefined) {
-          return undefined;
-        }
-
-        // Handle already parsed arrays
-        if (Array.isArray(val)) {
-          return val.map((v) => (typeof v === "string" ? parseInt(v, 10) : v));
-        }
-
-        // Handle string inputs
-        if (typeof val === "string") {
-          // Handle JSON array string like "[11,22,14]"
-          if (val.trim().startsWith("[") && val.trim().endsWith("]")) {
-            try {
-              const parsed = JSON.parse(val);
-              if (Array.isArray(parsed)) {
-                return parsed.map((v) =>
-                  typeof v === "string" ? parseInt(v, 10) : v
-                );
-              }
-            } catch (e) {
-              // If JSON parsing fails, fall through to other handling
-            }
-          }
-
-          // Handle comma-separated string like "11,22,14"
-          if (val.includes(",")) {
-            return val
-              .split(",")
-              .map((v) => parseInt(v.trim(), 10))
-              .filter((n) => !isNaN(n));
-          }
-
-          // Handle single number string
-          const singleNum = parseInt(val.trim(), 10);
-          if (!isNaN(singleNum)) {
-            return [singleNum];
-          }
-        }
-
-        return val;
-      }, z.array(z.number()).optional()),
-      description: "Array of category IDs to filter markets",
+      type: z.array(z.number()).optional(),
+      description: "Array of category IDs to filter markets. Example: [11, 22, 14]. Can be omitted.",
     },
     currency_mode: {
       type: z.enum(["play_money", "real_money", "all"]).default("all"),
@@ -164,50 +140,102 @@ class MarketsTool extends MCPTool<MarketsInput> {
     },
   } as any;
 
+  // Helper method to parse categories from various input formats
+  private parseCategories(val: any): number[] | undefined {
+    // Handle empty string, null, undefined
+    if (val === "" || val === null || val === undefined) {
+      return undefined;
+    }
+
+    // Handle already parsed arrays
+    if (Array.isArray(val)) {
+      return val.map((v) => (typeof v === "string" ? parseInt(v, 10) : v));
+    }
+
+    // Handle string inputs
+    if (typeof val === "string") {
+      // Handle JSON array string like "[11,22,14]"
+      if (val.trim().startsWith("[") && val.trim().endsWith("]")) {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) {
+            return parsed.map((v) =>
+              typeof v === "string" ? parseInt(v, 10) : v
+            );
+          }
+        } catch (e) {
+          // If JSON parsing fails, fall through to other handling
+        }
+      }
+
+      // Handle comma-separated string like "11,22,14"
+      if (val.includes(",")) {
+        return val
+          .split(",")
+          .map((v) => parseInt(v.trim(), 10))
+          .filter((n) => !isNaN(n));
+      }
+
+      // Handle single number string
+      const singleNum = parseInt(val.trim(), 10);
+      if (!isNaN(singleNum)) {
+        return [singleNum];
+      }
+    }
+
+    return Array.isArray(val) ? val : undefined;
+  }
+
   async execute(input: MarketsInput) {
+    // Parse categories using our helper method for backward compatibility
+    const parsedInput = {
+      ...input,
+      categories: this.parseCategories(input.categories)
+    };
+
     const fetchMarkets = async (currencyMode?: "play_money" | "real_money") => {
       const queryParams = new URLSearchParams();
 
-      if (input.categories !== undefined && input.categories.length > 0) {
-        input.categories.forEach((category) =>
+      if (parsedInput.categories !== undefined && parsedInput.categories.length > 0) {
+        parsedInput.categories.forEach((category) =>
           queryParams.append("categories", category.toString())
         );
       }
       if (currencyMode) {
         queryParams.append("currency_mode", currencyMode);
       }
-      if (input.hide_my_bets !== undefined) {
-        queryParams.append("hide_my_bets", input.hide_my_bets.toString());
+      if (parsedInput.hide_my_bets !== undefined) {
+        queryParams.append("hide_my_bets", parsedInput.hide_my_bets.toString());
       }
-      if (input.limit !== undefined) {
-        queryParams.append("limit", input.limit.toString());
+      if (parsedInput.limit !== undefined) {
+        queryParams.append("limit", parsedInput.limit.toString());
       }
-      if (input.live !== undefined) {
-        queryParams.append("live", input.live.toString());
+      if (parsedInput.live !== undefined) {
+        queryParams.append("live", parsedInput.live.toString());
       }
-      if (input.offset !== undefined) {
-        queryParams.append("offset", input.offset.toString());
+      if (parsedInput.offset !== undefined) {
+        queryParams.append("offset", parsedInput.offset.toString());
       }
-      if (input.only_markets_i_follow !== undefined) {
+      if (parsedInput.only_markets_i_follow !== undefined) {
         queryParams.append(
           "only_markets_i_follow",
-          input.only_markets_i_follow.toString()
+          parsedInput.only_markets_i_follow.toString()
         );
       }
-      if (input.ordering) {
-        queryParams.append("ordering", input.ordering);
+      if (parsedInput.ordering) {
+        queryParams.append("ordering", parsedInput.ordering);
       }
-      if (input.resolved_only !== undefined) {
-        queryParams.append("resolved_only", input.resolved_only.toString());
+      if (parsedInput.resolved_only !== undefined) {
+        queryParams.append("resolved_only", parsedInput.resolved_only.toString());
       }
-      if (input.search) {
-        queryParams.append("search", input.search);
+      if (parsedInput.search) {
+        queryParams.append("search", parsedInput.search);
       }
-      if (input.tag) {
-        queryParams.append("tag", input.tag);
+      if (parsedInput.tag) {
+        queryParams.append("tag", parsedInput.tag);
       }
-      if (input.status !== undefined) {
-        queryParams.append("status", input.status);
+      if (parsedInput.status !== undefined) {
+        queryParams.append("status", parsedInput.status);
       }
 
       const url = `https://api.futuur.com/api/v1/markets?${queryParams.toString()}`;
@@ -246,123 +274,53 @@ class MarketsTool extends MCPTool<MarketsInput> {
         });
       };
 
-      let formattedOutput = `# Futuur Prediction Markets\n\n`;
+      let formattedOutput = ``;
 
       if (marketData.results && marketData.results.length > 0) {
-        formattedOutput += `Found ${marketData.results.length} market(s)\n\n`;
-
         marketData.results.forEach((market: any, index: number) => {
           formattedOutput += `## ${index + 1}. ${market.title}\n\n`;
 
-          // Market status and basic info
-          formattedOutput += `**Status:** ${market.status_display}\n`;
-          if (market.bet_end_date) {
-            formattedOutput += `**Betting ends:** ${formatDate(
-              market.bet_end_date
-            )}\n`;
+          // Find the primary outcome (Yes if available, otherwise first outcome)
+          const primaryOutcome = market.outcomes?.find((outcome: any) => 
+            outcome.title.toLowerCase() === "yes"
+          ) || market.outcomes?.[0];
+
+          if (primaryOutcome && primaryOutcome.price) {
+            formattedOutput += `**Chances:**\n`;
+            
+            if (primaryOutcome.price.BTC !== undefined) {
+              formattedOutput += `- Real Money: ${(primaryOutcome.price.BTC * 100).toFixed(0)}% ($${primaryOutcome.price.BTC.toFixed(2)})\n`;
+            }
+            
+            if (primaryOutcome.price.OOM !== undefined) {
+              formattedOutput += `- Play Money: ${(primaryOutcome.price.OOM * 100).toFixed(0)}% (ø${primaryOutcome.price.OOM.toFixed(2)})\n`;
+            }
+            
+            formattedOutput += `\n`;
           }
 
-          // Categories
-          if (market.category && market.category.length > 0) {
-            const categoryPath = market.category
-              .map((cat: any) => cat.title)
-              .join(" > ");
-            formattedOutput += `**Category:** ${categoryPath}\n`;
+          // Trading Volume
+          formattedOutput += `**Trading Volume:**\n`;
+          if (market.volume_real_money) {
+            formattedOutput += `- Real Money: ${formatCurrency(market.volume_real_money)}\n`;
           }
-
-          // Tags
-          if (market.tags && market.tags.length > 0) {
-            const tagNames = market.tags.map((tag: any) => tag.name).join(", ");
-            formattedOutput += `**Tags:** ${tagNames}\n`;
+          if (market.volume_play_money) {
+            formattedOutput += `- Play Money: ${formatCurrency(market.volume_play_money, "OOM")}\n`;
           }
-
           formattedOutput += `\n`;
 
-          // Trading volume
-          if (market.volume_play_money || market.volume_real_money) {
-            formattedOutput += `**Trading Volume:**\n`;
-            if (market.volume_play_money) {
-              formattedOutput += `- Play Money: ${formatCurrency(
-                market.volume_play_money,
-                "OOM"
-              )}\n`;
-            }
-            if (market.volume_real_money) {
-              formattedOutput += `- Real Money: ${formatCurrency(
-                market.volume_real_money,
-                market.canonical_currency
-              )}\n`;
-            }
-            formattedOutput += `\n`;
+          // Betting ends date
+          if (market.bet_end_date) {
+            formattedOutput += `**Betting ends:** ${formatDate(market.bet_end_date)}\n\n`;
+          } else {
+            formattedOutput += `**Betting ends:** No end date specified\n\n`;
           }
 
-          // Outcomes and odds
-          if (market.outcomes && market.outcomes.length > 0) {
-            formattedOutput += `**Current Odds:**\n`;
-            market.outcomes.forEach((outcome: any) => {
-              formattedOutput += `- **${outcome.title}:**\n`;
-              if (outcome.price) {
-                if (outcome.price.OOM) {
-                  formattedOutput += `  - Play Money: ${(
-                    outcome.price.OOM * 100
-                  ).toFixed(1)}% (${formatCurrency(
-                    outcome.price.OOM,
-                    "OOM"
-                  )})\n`;
-                }
-                if (outcome.price.BTC) {
-                  formattedOutput += `  - Real Money: ${(
-                    outcome.price.BTC * 100
-                  ).toFixed(1)}% (${formatCurrency(
-                    outcome.price.BTC,
-                    "BTC"
-                  )})\n`;
-                }
-                // Handle other currencies dynamically
-                Object.keys(outcome.price).forEach((currency) => {
-                  if (currency !== "OOM" && currency !== "BTC") {
-                    formattedOutput += `  - Real Money (${currency}): ${(
-                      outcome.price[currency] * 100
-                    ).toFixed(1)}% (${formatCurrency(
-                      outcome.price[currency],
-                      currency
-                    )})\n`;
-                  }
-                });
-              }
-            });
-            formattedOutput += `\n`;
-          }
-
-          // Description (truncated if too long)
-          if (market.description) {
-            const plainDescription = market.description
-              .replace(/<[^>]*>/g, "")
-              .trim();
-            const truncatedDesc =
-              plainDescription.length > 200
-                ? plainDescription.substring(0, 200) + "..."
-                : plainDescription;
-            formattedOutput += `**Description:** ${truncatedDesc}\n\n`;
-          }
-
-          formattedOutput += `**Market ID:** ${market.id}\n\n`;
-
+          // Add separator between markets (except for the last one)
           if (index < marketData.results.length - 1) {
             formattedOutput += `---\n\n`;
           }
         });
-
-        // Pagination info
-        if (marketData.pagination) {
-          formattedOutput += `\n## Pagination Info\n`;
-          if (marketData.pagination.total) {
-            formattedOutput += `Total markets available: ${marketData.pagination.total}\n`;
-          }
-          if (marketData.pagination.note) {
-            formattedOutput += `Note: ${marketData.pagination.note}\n`;
-          }
-        }
       } else {
         formattedOutput += `No markets found matching your criteria.\n`;
       }
@@ -373,7 +331,7 @@ class MarketsTool extends MCPTool<MarketsInput> {
     try {
       let allMarketData: any = { results: [], pagination: {} }; // Initialize with empty results and placeholder pagination
 
-      if (input.currency_mode === "all") {
+      if (parsedInput.currency_mode === "all") {
         const playMoneyData = await fetchMarkets("play_money");
 
         allMarketData.results = playMoneyData.results;
@@ -393,10 +351,10 @@ class MarketsTool extends MCPTool<MarketsInput> {
           note: "Pagination for combined results; next/previous links are invalidated.",
         };
       } else if (
-        input.currency_mode === "play_money" ||
-        input.currency_mode === "real_money"
+        parsedInput.currency_mode === "play_money" ||
+        parsedInput.currency_mode === "real_money"
       ) {
-        allMarketData = await fetchMarkets(input.currency_mode);
+        allMarketData = await fetchMarkets(parsedInput.currency_mode);
         allMarketData.custom_formatted_response =
           formatMarketData(allMarketData);
       } else {

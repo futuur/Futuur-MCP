@@ -1,6 +1,6 @@
-import { MCPTool } from "mcp-framework";
 import { z } from "zod";
 import { fetchFromFutuur } from "../utils/api.js";
+import { FutuurBaseTool } from "./FutuurBaseTool.js";
 
 interface SellBetInput {
   id: number;
@@ -8,7 +8,7 @@ interface SellBetInput {
   amount?: number;
 }
 
-class SellBetTool extends MCPTool<SellBetInput> {
+class SellBetTool extends FutuurBaseTool<SellBetInput> {
   name = "sell_bet";
   description = `
     Sell all or part of a bet by specifying the bet ID and optional shares or amount.
