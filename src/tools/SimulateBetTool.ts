@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { simulateBetPurchase, SimulateBetPurchaseParams } from "../utils/api.js";
+import { simulateBetPurchase, SimulateBetPurchaseParams, fetchFromFutuur } from "../utils/api.js";
 import { SIMULATION_PAYLOAD_SOURCE_MARKER } from "../utils/toolConstants.js";
 import { FutuurBaseTool } from "./FutuurBaseTool.js";
 
@@ -84,6 +84,59 @@ The API will determine the missing value (amount or shares) based on the one pro
           content: [{
             type: "text" as const,
             text: "Error: Please provide either 'amount' or 'shares' for the simulation, not both."
+          }]
+        };
+      }
+
+      // First, get the market details to check if order_book_enabled is true
+      // We need to get the market ID from the outcome
+      let marketData;
+      try {
+        // Get market details by making a call to find which market contains this outcome
+        // We'll need to fetch market details - for now we'll try to get it from the outcome ID
+        // This is a bit tricky since we only have the outcome ID, but we can try to fetch markets
+        // and match the outcome, or we could modify the API to get market info from outcome ID
+        
+        // For now, let's try to call the simulation and catch the error to get market info
+        // We'll implement a more elegant solution by first checking if we can get market data
+        
+        // Try to find the market by calling a general markets endpoint and matching outcomes
+        // This is not the most efficient but will work for the validation
+        const marketsResponse = await fetchFromFutuur("questions/", {
+          params: { limit: 1000 }, // Get many markets to search through
+          method: "GET"
+        });
+        
+        // Find the market that contains our outcome
+        const market = marketsResponse.results?.find((m: any) => 
+          m.outcomes?.some((o: any) => o.id === input.outcome)
+        );
+        
+        if (!market) {
+          return {
+            content: [{
+              type: "text" as const,
+              text: "Error: Could not find the market for the specified outcome ID."
+            }]
+          };
+        }
+        
+        marketData = market;
+      } catch (error) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: "Error: Unable to verify market details. Please try again later."
+          }]
+        };
+      }
+
+      // Check if order_book_enabled is false
+      if (marketData.order_book_enabled) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: "⚠️ **Betting Currently Restricted**\n\nThis market does not currently support betting as it requires order book functionality to be enabled. This is a temporary limitation while the platform is being updated.\n\nPlease try betting on markets that have order book trading enabled, or check back later when this feature is restored for all markets."
           }]
         };
       }

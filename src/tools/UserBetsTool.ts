@@ -6,7 +6,7 @@ interface UserBetsInput {
   limit: number;
   offset: number;
   active?: boolean;
-  currency_mode: "play_money" | "real_money" | "";
+  currency_mode: "play_money" | "real_money" | "all";
   following?: boolean;
   past_bets?: boolean;
   question?: number;
@@ -48,8 +48,8 @@ class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
       description: "Filter by active wagers (wagers with status purchased)"
     },
     currency_mode: {
-      type: z.enum(["play_money", "real_money", ""]),
-      description: "Filter by currency mode"
+      type: z.enum(["play_money", "real_money", "all"]).default("all"),
+      description: "Currency mode. Allowed values: 'play_money', 'real_money', or 'all' to fetch both."
     },
     following: {
       type: z.boolean().optional(),
@@ -61,14 +61,26 @@ class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
     },
     question: {
       type: z.preprocess(
-        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        (val) => {
+          if (typeof val === "string") {
+            if (val.trim() === "") return undefined;
+            return parseInt(val, 10);
+          }
+          return val;
+        },
         z.number().optional()
       ),
       description: "Filter by question ID"
     },
     user: {
       type: z.preprocess(
-        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        (val) => {
+          if (typeof val === "string") {
+            if (val.trim() === "") return undefined;
+            return parseInt(val, 10);
+          }
+          return val;
+        },
         z.number().optional()
       ),
       description: "Filter by user ID"
@@ -82,7 +94,12 @@ class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
       if (input.limit !== undefined) params.limit = input.limit;
       if (input.offset !== undefined) params.offset = input.offset;
       if (input.active !== undefined) params.active = input.active;
-      if (input.currency_mode !== undefined) params.currency_mode = input.currency_mode;
+      
+      // Handle currency_mode - only pass to API if it's not "all"
+      if (input.currency_mode !== undefined && input.currency_mode !== "all") {
+        params.currency_mode = input.currency_mode;
+      }
+      
       if (input.following !== undefined) params.following = input.following;
       if (input.past_bets !== undefined) params.past_bets = input.past_bets;
       if (input.question !== undefined) params.question = input.question;

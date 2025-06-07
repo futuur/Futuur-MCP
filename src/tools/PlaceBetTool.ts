@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { placeBet } from "../utils/api.js";
+import { placeBet, fetchFromFutuur } from "../utils/api.js";
 import { SIMULATION_PAYLOAD_SOURCE_MARKER } from "../utils/toolConstants.js";
 import { FutuurBaseTool } from "./FutuurBaseTool.js";
 
@@ -52,6 +52,51 @@ class PlaceBetTool extends FutuurBaseTool<PlaceBetExecuteInput> {
 
   async execute(input: PlaceBetExecuteInput) {
     try {
+      // First, verify that the market has order_book_enabled = true
+      const outcomeId = input.confirmed_simulation_payload.outcome;
+      
+      let marketData;
+      try {
+        // Find the market that contains our outcome
+        const marketsResponse = await fetchFromFutuur("questions/", {
+          params: { limit: 1000 }, // Get many markets to search through
+          method: "GET"
+        });
+        
+        // Find the market that contains our outcome
+        const market = marketsResponse.results?.find((m: any) => 
+          m.outcomes?.some((o: any) => o.id === outcomeId)
+        );
+        
+        if (!market) {
+          return {
+            content: [{
+              type: "text" as const,
+              text: "Error: Could not find the market for the specified outcome ID."
+            }]
+          };
+        }
+        
+        marketData = market;
+      } catch (error) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: "Error: Unable to verify market details before placing bet. Please try again later."
+          }]
+        };
+      }
+
+      // Check if order_book_enabled is true
+      if (!marketData.order_book_enabled) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: "⚠️ **Betting Currently Restricted**\n\nThis market does not currently support betting as it requires order book functionality to be enabled. This is a temporary limitation while the platform is being updated.\n\nPlease try betting on markets that have order book trading enabled, or check back later when this feature is restored for all markets."
+          }]
+        };
+      }
+
       // The `confirmed_simulation_payload` is the direct output from the 'get_bet_simulation' tool.
       // It includes our `tool_source` marker for validation and the actual simulation data.
       const { tool_source, ...apiRequestBody } = input.confirmed_simulation_payload;

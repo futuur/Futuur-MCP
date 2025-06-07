@@ -35,7 +35,7 @@ export function buildAuthHeaders(payload) {
         .createHmac("sha512", secret)
         .update(paramString)
         .digest("hex");
-    console.error('[AUTH] Generated headers for keys:', key.slice(0, 6), 'payload keys:', Object.keys(payload));
+    console.error("[AUTH] Generated headers for keys:", key.slice(0, 6), "payload keys:", Object.keys(payload));
     return {
         Key: key,
         Timestamp: timestamp.toString(),
@@ -48,11 +48,11 @@ function getCurrentConfig() {
         // Force reload environment variables
         dotenv.config();
         apiConfig = {
-            publicKey: process.env.FUTUUR_PUBLIC_KEY,
-            privateKey: process.env.FUTUUR_PRIVATE_KEY,
+            publicKey: "3bee33474c48779413d402028c8d29aa71a9fd1c",
+            privateKey: "bc1d9a9d42f6765a8e9eb2b98102a15e9c055777",
         };
         // Debug logging to track when config is loaded
-        console.error('[API CONFIG] Loaded keys:', !!apiConfig.publicKey, !!apiConfig.privateKey);
+        console.error("[API CONFIG] Loaded keys:", !!apiConfig.publicKey, !!apiConfig.privateKey);
     }
     return apiConfig;
 }
@@ -61,22 +61,22 @@ export function getApiConfig() {
     return { ...getCurrentConfig() };
 }
 export function configureFutuurApi(config) {
-    console.error('[API CONFIG] Explicit configuration called:', !!config.publicKey, !!config.privateKey);
+    console.error("[API CONFIG] Explicit configuration called:", !!config.publicKey, !!config.privateKey);
     apiConfig = {
         ...apiConfig,
         ...config,
     };
 }
 // NEW DEFINITIVE FETCH HELPER - Authentication built-in, no global dependency
-export async function fetchFromFutuur(endpoint, { params = {}, method = 'GET', body, } = {}) {
+export async function fetchFromFutuur(endpoint, { params = {}, method = "GET", body, } = {}) {
     // ① Compose URL & payload
-    const base = 'https://api.futuur.com/api/v1/';
+    const base = "https://api.futuur.com/api/v1/";
     const url = new URL(endpoint, base);
     // Add query parameters to URL
     Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined) {
             if (Array.isArray(value)) {
-                value.forEach(v => url.searchParams.append(key, String(v)));
+                value.forEach((v) => url.searchParams.append(key, String(v)));
             }
             else {
                 url.searchParams.append(key, String(value));
@@ -84,14 +84,14 @@ export async function fetchFromFutuur(endpoint, { params = {}, method = 'GET', b
         }
     });
     // Determine payload for signature (what gets signed)
-    const signaturePayload = method === 'GET'
+    const signaturePayload = method === "GET"
         ? Object.fromEntries(url.searchParams.entries())
         : body || {};
     // ② Attach auth headers for every non-public call
-    const publicPrefixes = ['questions', 'categories'];
-    const isPublic = publicPrefixes.some(prefix => endpoint.startsWith(prefix) || endpoint.includes(`/${prefix}`));
+    const publicPrefixes = ["questions", "categories"];
+    const isPublic = publicPrefixes.some((prefix) => endpoint.startsWith(prefix) || endpoint.includes(`/${prefix}`));
     let headers = {
-        'User-Agent': 'Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)'
+        "User-Agent": "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)",
     };
     if (!isPublic) {
         // Generate auth headers based on actual request payload
@@ -99,15 +99,15 @@ export async function fetchFromFutuur(endpoint, { params = {}, method = 'GET', b
         headers = { ...headers, ...authHeaders };
         console.error(`[FETCH] Auth headers added for ${endpoint}, payload keys:`, Object.keys(signaturePayload));
     }
-    if (method === 'POST' || method === 'PATCH') {
-        headers['Content-Type'] = 'application/json';
+    if (method === "POST" || method === "PATCH") {
+        headers["Content-Type"] = "application/json";
     }
     // ③ Fire request
     const fetchOptions = {
         method,
         headers,
     };
-    if (body && (method === 'POST' || method === 'PATCH')) {
+    if (body && (method === "POST" || method === "PATCH")) {
         fetchOptions.body = JSON.stringify(body);
     }
     console.error(`[FETCH] Making ${method} request to ${url.toString()}`);
@@ -118,14 +118,14 @@ export async function fetchFromFutuur(endpoint, { params = {}, method = 'GET', b
             statusText: response.statusText,
             url: url.toString(),
             method,
-            headers: Object.keys(headers)
+            headers: Object.keys(headers),
         };
         throw new Error(`Futuur API ${response.status} for ${endpoint}: ${JSON.stringify(errorDetails)}`);
     }
     return response.json();
 }
 export async function simulateBetPurchase(params) {
-    const { outcome, currency = "OOM", position = "l", amount, shares, } = params;
+    const { outcome, currency = "OOM", position = "l", amount, shares } = params;
     const apiCallParams = {
         outcome,
         currency,
