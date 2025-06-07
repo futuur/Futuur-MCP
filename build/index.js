@@ -6,7 +6,7 @@ configureFutuurApi({
     privateKey: process.env.FUTUUR_PRIVATE_KEY,
 });
 // Also store in process.env to ensure availability across imports
-process.env.FUTUUR_API_CONFIGURED = "true";
+// process.env.FUTUUR_API_CONFIGURED = "true";
 // fetchFromFutuur("me")
 //   .then(() => {
 //     console.error("✅ [HEALTH] Futuur authentication working");

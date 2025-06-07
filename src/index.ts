@@ -8,7 +8,7 @@ configureFutuurApi({
 });
 
 // Also store in process.env to ensure availability across imports
-process.env.FUTUUR_API_CONFIGURED = "true";
+// process.env.FUTUUR_API_CONFIGURED = "true";
  
  
 // fetchFromFutuur("me")
