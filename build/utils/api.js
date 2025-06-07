@@ -48,8 +48,8 @@ function getCurrentConfig() {
         // Force reload environment variables
         dotenv.config();
         apiConfig = {
-            publicKey: "3bee33474c48779413d402028c8d29aa71a9fd1c",
-            privateKey: "bc1d9a9d42f6765a8e9eb2b98102a15e9c055777",
+            publicKey: process.env.FUTUUR_PUBLIC_KEY,
+            privateKey: process.env.FUTUUR_PRIVATE_KEY,
         };
         // Debug logging to track when config is loaded
         console.error("[API CONFIG] Loaded keys:", !!apiConfig.publicKey, !!apiConfig.privateKey);
