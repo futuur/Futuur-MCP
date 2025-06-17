@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/futuur-futuur-mcp-badge.png)](https://mseep.ai/app/futuur-futuur-mcp)
+
 # Futuur API MCP Integration
 
 <div align="center">
