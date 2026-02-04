@@ -25,11 +25,11 @@ interface MarketsInput {
 class MarketsTool extends MCPTool<MarketsInput> {
   name = "get_markets";
   description = `
-    Retrieve and list markets from Futuur, with optional filters such as category, status, and search query, to help you find relevant prediction markets. By default, it will show play money and real money odds (outcomes prices).
+    Retrieve and list events (which contain markets) from Futuur, with optional filters such as category, status, and search query, to help you find relevant prediction markets. By default, it will show play money and real money odds (market prices).
 
-    The tool will return a list of markets with the following markdown format:
+    The tool will return a list of events with their markets in the following markdown format:
 
-    ## 1. {Market Title}
+    ## 1. {Event Title}
 
     **Chances:**
     - Real Money: {percentage}% (\${price})
@@ -43,7 +43,7 @@ class MarketsTool extends MCPTool<MarketsInput> {
 
     ---
 
-    ## 2. {Next Market Title}
+    ## 2. {Next Event Title}
     ...
 
     Common use cases:
@@ -54,8 +54,8 @@ class MarketsTool extends MCPTool<MarketsInput> {
   
 
     Warning: If no filters are provided, the result may be very large.
-    Warning: This tool does not provide detailed information for a single market—use get_market_by_id for that.
-    Warning: Using too many filters may result in no markets being returned.
+    Warning: This tool does not provide detailed information for a single event—use get_market_details for that.
+    Warning: Using too many filters may result in no events being returned.
   `;
 
   schema = {
@@ -238,7 +238,8 @@ class MarketsTool extends MCPTool<MarketsInput> {
         queryParams.append("status", parsedInput.status);
       }
 
-      const url = `https://api.futuur.com/api/v1/markets?${queryParams.toString()}`;
+      // v2.0 API: Use /events/ endpoint (markets are nested in events)
+      const url = `https://api.futuur.com/events/?${queryParams.toString()}`;
       const response = await fetch(url, {
         headers: {
           "User-Agent":
@@ -277,52 +278,51 @@ class MarketsTool extends MCPTool<MarketsInput> {
       let formattedOutput = ``;
 
       if (marketData.results && marketData.results.length > 0) {
-        marketData.results.forEach((market: any, index: number) => {
-          formattedOutput += `## ${index + 1}. ${market.title}\n\n`;
+        marketData.results.forEach((event: any, index: number) => {
+          formattedOutput += `## ${index + 1}. ${event.title}\n\n`;
 
-          // Find the primary outcome (Yes if available, otherwise first outcome)
-          const primaryOutcome = market.outcomes?.find((outcome: any) => 
-            outcome.title.toLowerCase() === "yes"
-          ) || market.outcomes?.[0];
+          // v2.0: Markets are nested in events. Find the primary market (first market or highest price)
+          const markets = event.markets || [];
+          const primaryMarket = markets.find((market: any) => 
+            market.title?.toLowerCase().includes("yes")
+          ) || markets[0];
 
-          if (primaryOutcome && primaryOutcome.price) {
+          if (primaryMarket && primaryMarket.price !== null && primaryMarket.price !== undefined) {
             formattedOutput += `**Chances:**\n`;
             
-            if (primaryOutcome.price.BTC !== undefined) {
-              formattedOutput += `- Real Money: ${(primaryOutcome.price.BTC * 100).toFixed(0)}% ($${primaryOutcome.price.BTC.toFixed(2)})\n`;
-            }
-            
-            if (primaryOutcome.price.OOM !== undefined) {
-              formattedOutput += `- Play Money: ${(primaryOutcome.price.OOM * 100).toFixed(0)}% (ø${primaryOutcome.price.OOM.toFixed(2)})\n`;
-            }
+            // v2.0: Price is a single number, not an object with currency keys
+            // We need to check currency_mode to determine which price to show
+            // For now, show the price as-is (it's already a probability)
+            const pricePercent = (primaryMarket.price * 100).toFixed(0);
+            formattedOutput += `- Market Price: ${pricePercent}%\n`;
             
             formattedOutput += `\n`;
           }
 
           // Trading Volume
           formattedOutput += `**Trading Volume:**\n`;
-          if (market.volume_real_money) {
-            formattedOutput += `- Real Money: ${formatCurrency(market.volume_real_money)}\n`;
+          if (event.volume_real_money) {
+            formattedOutput += `- Real Money: ${formatCurrency(event.volume_real_money)}\n`;
           }
-          if (market.volume_play_money) {
-            formattedOutput += `- Play Money: ${formatCurrency(market.volume_play_money, "OOM")}\n`;
+          if (event.volume_play_money) {
+            formattedOutput += `- Play Money: ${formatCurrency(event.volume_play_money, "OOM")}\n`;
           }
           formattedOutput += `\n`;
 
           // Betting ends date
-          if (market.bet_end_date) {
-            formattedOutput += `**Betting ends:** ${formatDate(market.bet_end_date)}\n\n`;
+          if (event.bet_end_date) {
+            formattedOutput += `**Betting ends:** ${formatDate(event.bet_end_date)}\n\n`;
           } else {
             formattedOutput += `**Betting ends:** No end date specified\n\n`;
           }
 
-          // Add separator between markets (except for the last one)
+          // Add separator between events (except for the last one)
           if (index < marketData.results.length - 1) {
             formattedOutput += `---\n\n`;
           }
         });
       } else {
-        formattedOutput += `No markets found matching your criteria.\n`;
+        formattedOutput += `No events found matching your criteria.\n`;
       }
 
       return formattedOutput;

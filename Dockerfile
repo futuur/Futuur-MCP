@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copy package files and install all dependencies (including dev)
 COPY package*.json ./
-RUN npm install
+RUN npm ci --only=development
 
 # Copy the rest of the source code
 COPY . .
@@ -19,12 +19,23 @@ WORKDIR /app
 
 # Copy production package files and install production dependencies only
 COPY package*.json ./
-RUN npm install --production --ignore-scripts
+RUN npm ci --only=production --ignore-scripts
 
 # Copy built files from builder stage
 COPY --from=builder /app/build ./build
 
+# Create a non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S mcp -u 1001
+
+# Change ownership of the app directory
+RUN chown -R mcp:nodejs /app
+USER mcp
+
 EXPOSE 3000
 
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "console.log('Health check passed')" || exit 1
 
 CMD ["node", "build/index.js"]

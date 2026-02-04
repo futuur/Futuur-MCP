@@ -9,22 +9,22 @@ interface UserBetsInput {
   currency_mode: "play_money" | "real_money" | "all";
   following?: boolean;
   past_bets?: boolean;
-  question?: number;
+  event?: number;
   user?: number;
 }
 
 class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
   name = "get_user_bets";
   description = `
-    Retrieve a list of bets placed by a user, with optional filters for status, currency, and market.
+    Retrieve a list of wagers (bets) placed by a user, with optional filters for status, currency, and event.
 
     Common use cases:
-    - When the user wants to see their betting history or active bets.
-    - When displaying a list of bets in a dashboard or profile.
+    - When the user wants to see their betting history or active wagers.
+    - When displaying a list of wagers in a dashboard or profile.
     - When the user asks "Show me my bets" or "What bets have I placed?"
 
     Warning: This tool may return a large result set if no filters are applied.
-    Warning: It does not provide detailed information for a single bet—use a bet detail tool for that.
+    Warning: It does not provide detailed information for a single wager—use a wager detail tool for that.
     Warning: If required parameters are missing, the tool may fail or return incomplete results.
   `;
 
@@ -70,7 +70,7 @@ class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
         },
         z.number().optional()
       ),
-      description: "Filter by question ID"
+      description: "Filter by event ID"
     },
     user: {
       type: z.preprocess(
@@ -102,10 +102,11 @@ class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
       
       if (input.following !== undefined) params.following = input.following;
       if (input.past_bets !== undefined) params.past_bets = input.past_bets;
-      if (input.question !== undefined) params.question = input.question;
+      if (input.event !== undefined) params.event = input.event;
       if (input.user !== undefined) params.user = input.user;
 
-      const data = await fetchFromFutuur("bets", {
+      // v2.0 API: Use /wagers/ endpoint
+      const data = await fetchFromFutuur("wagers/", {
         params,
       });
 

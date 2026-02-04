@@ -122,7 +122,8 @@ export async function fetchFromFutuur(
   } = {}
 ) {
   // ① Compose URL & payload
-  const base = "https://api.futuur.com/api/v1/";
+  // v2.0 API uses root paths, not /api/v1/
+  const base = "https://api.futuur.com/";
   const url = new URL(endpoint, base);
 
   // Add query parameters to URL
@@ -143,7 +144,8 @@ export async function fetchFromFutuur(
       : body || {};
 
   // ② Attach auth headers for every non-public call
-  const publicPrefixes = ["questions", "categories"];
+  // v2.0: events and categories are public endpoints
+  const publicPrefixes = ["events", "categories"];
   const isPublic = publicPrefixes.some(
     (prefix) => endpoint.startsWith(prefix) || endpoint.includes(`/${prefix}`)
   );
@@ -199,41 +201,28 @@ export async function fetchFromFutuur(
   return response.json();
 }
 
-// Helper for simulating bet purchases
-// New interface for params
-export interface SimulateBetPurchaseParams {
-  outcome: number;
-  currency?: string;
-  position?: "l" | "s";
+// Helper for creating limit orders (v2.0 API)
+export interface CreateLimitOrderParams {
+  market: number;
+  side: "bid" | "ask";
+  position: "l" | "s";
+  price?: number | null;
+  shares: number;
   amount?: number;
-  shares?: number;
+  currency: string;
+  expired_at?: string;
+  cancel_conflicting_orders?: boolean;
 }
 
-export async function simulateBetPurchase(params: SimulateBetPurchaseParams) {
-  const { outcome, currency = "OOM", position = "l", amount, shares } = params;
-
-  const apiCallParams: Record<string, any> = {
-    outcome,
-    currency,
-    position,
-  };
-
-  if (amount !== undefined) {
-    apiCallParams.amount = amount;
-  } else if (shares !== undefined) {
-    apiCallParams.shares = shares;
-  }
-
-  return fetchFromFutuur("bets/simulate_purchase/", {
-    params: apiCallParams,
-    method: "GET",
-  });
-}
-
-// Helper for placing bets
-export async function placeBet(payload: Record<string, any>) {
-  return fetchFromFutuur("bets/", {
+export async function createLimitOrder(params: CreateLimitOrderParams) {
+  return fetchFromFutuur("orders/", {
     method: "POST",
-    body: payload,
+    body: params,
   });
+}
+
+// Legacy helper name for backward compatibility during transition
+// This now creates a limit order instead of a direct bet
+export async function placeBet(payload: Record<string, any>) {
+  return createLimitOrder(payload as CreateLimitOrderParams);
 }

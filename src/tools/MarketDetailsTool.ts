@@ -8,16 +8,16 @@ interface MarketDetailsInput {
 class MarketDetailsTool extends MCPTool<MarketDetailsInput> {
   name = "get_market_details";
   description = `
-    Retrieve detailed information about a specific market by its ID.
+    Retrieve detailed information about a specific event (which contains markets) by its ID.
 
     Common use cases:
-    - When the user wants detailed information about a specific market.
-    - When displaying a market's details in a UI.
-    - When the user asks "Show me the details for market X."
+    - When the user wants detailed information about a specific event.
+    - When displaying an event's details in a UI.
+    - When the user asks "Show me the details for event X."
 
-    Warning: You must provide a valid market ID; otherwise, the tool will fail.
-    Warning: This tool does not list all markets—use list_markets for that.
-    Warning: If the market ID does not exist, the tool will return an error.
+    Warning: You must provide a valid event ID; otherwise, the tool will fail.
+    Warning: This tool does not list all events—use get_markets for that.
+    Warning: If the event ID does not exist, the tool will return an error.
   `;
 
   schema = {
@@ -26,13 +26,14 @@ class MarketDetailsTool extends MCPTool<MarketDetailsInput> {
         (val) => (typeof val === "string" ? parseInt(val, 10) : val),
         z.number()
       ),
-      description: "A unique integer value identifying this market"
+      description: "A unique integer value identifying this event"
     }
   } as any;
 
   async execute(input: MarketDetailsInput) {
     try {
-      const response = await fetch(`https://api.futuur.com/api/v1/markets/${input.id}`, {
+      // v2.0 API: Use /events/{id}/ endpoint (markets are nested in events)
+      const response = await fetch(`https://api.futuur.com/events/${input.id}/`, {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; MyServerBot/1.0; +https://example.com)"
         }
@@ -53,7 +54,7 @@ class MarketDetailsTool extends MCPTool<MarketDetailsInput> {
       return {
         content: [{
           type: "text",
-          text: `Error fetching market details: ${String(error)}`
+          text: `Error fetching event details: ${String(error)}`
         }]
       };
     }

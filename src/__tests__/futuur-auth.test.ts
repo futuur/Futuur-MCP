@@ -30,7 +30,7 @@ describe('Futuur Authentication', () => {
   });
 
   test('should generate valid auth headers', () => {
-    const payload = { outcome: 123, amount: 100 };
+    const payload = { market: 123, amount: 100 };
     const headers = buildAuthHeaders(payload);
     
     expect(headers).toHaveProperty('Key');
@@ -48,14 +48,15 @@ describe('Futuur Authentication', () => {
       json: () => Promise.resolve({ success: true })
     });
 
-    // Test authenticated endpoint through helper
-    await fetchFromFutuur('bets/simulate_purchase/', {
-      params: { outcome: 502037, currency: 'OOM', position: 'l', amount: 100 }
+    // Test authenticated endpoint through helper (v2.0: use orders endpoint)
+    await fetchFromFutuur('orders/', {
+      method: 'POST',
+      body: { market: 502037, currency: 'OOM', position: 'l', side: 'bid', shares: 100 }
     });
 
     // Verify fetch was called with auth headers
     expect(fetchSpy).toHaveBeenCalledWith(
-      expect.stringContaining('bets/simulate_purchase'),
+      expect.stringContaining('orders'),
       expect.objectContaining({
         headers: expect.objectContaining({
           Key: mockEnv.FUTUUR_PUBLIC_KEY,
@@ -73,8 +74,8 @@ describe('Futuur Authentication', () => {
       json: () => Promise.resolve({ results: [] })
     });
 
-    // Test public endpoint
-    await fetchFromFutuur('questions/', {
+    // Test public endpoint (v2.0: events is public)
+    await fetchFromFutuur('events/', {
       params: { limit: 10 }
     });
 
@@ -92,9 +93,9 @@ describe('Futuur Authentication', () => {
       json: () => Promise.resolve({ success: true })
     });
 
-    // Test with GET request containing query parameters
-    await fetchFromFutuur('bets/simulate_purchase/', {
-      params: { outcome: 502037, currency: 'OOM', position: 'l', amount: 100 }
+    // Test with GET request containing query parameters (v2.0: use wagers endpoint)
+    await fetchFromFutuur('wagers/', {
+      params: { limit: 10, offset: 0, currency_mode: 'play_money' }
     });
 
     // Verify that the HMAC was calculated with the actual query parameters
@@ -111,14 +112,15 @@ describe('Futuur Authentication', () => {
   test('should sign POST body correctly', async () => {
     fetchSpy.mockResolvedValue({
       ok: true,
-      status: 200,
+      status: 201,
       json: () => Promise.resolve({ id: 123 })
     });
 
-    const postBody = { outcome: 502037, amount: 100, currency: 'OOM', position: 'l' };
+    // v2.0: Use AddLimitOrder schema
+    const postBody = { market: 502037, shares: 100, currency: 'OOM', position: 'l', side: 'bid' };
 
-    // Test POST request with body
-    await fetchFromFutuur('bets/', {
+    // Test POST request with body (v2.0: use orders endpoint)
+    await fetchFromFutuur('orders/', {
       method: 'POST',
       body: postBody
     });

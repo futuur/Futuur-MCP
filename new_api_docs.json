@@ -1,0 +1,3315 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Futuur API Documentation",
+        "version": "v2.0",
+        "description": "> **✨ LATEST VERSION**\n> \n> This is the **latest API version (v2.0)**. \n> \n> For reference, the deprecated v1.0 documentation is available at: [https://api.futuur.com/v1.0/docs](https://api.futuur.com/v1.0/docs)\n\n> **🤖 AI Agents Integration**\n> \n> For AI agents and automated integrations, access the OpenAPI schema directly at:\n> \n> **[https://api.futuur.com/docs/schema/](https://api.futuur.com/docs/schema/)**\n> \n> This endpoint provides the complete API specification in JSON format, perfect for code generation, API clients, and AI-powered integrations.\n\n\n# Introduction\n\n## API Structure\n\n### Events and Markets\n\nThe Futuur API is built around **Events** (previously referred to as Questions in older API versions) and **Markets** (previously referred to as Outcomes in older API versions).\n\n- **Events** represent a question or prediction that can be bet on (e.g., \"Who will win the 2024 US Presidential Election?\")\n- **Markets** are the possible outcomes for an event (e.g., \"Candidate A\", \"Candidate B\", \"Other\")\n\nEach event contains multiple markets, and the relationship between markets is defined by **markets correlation**:\n\n- **Linked prices**: Markets are correlated. The sum of all market prices equals 1, and placing a bet on one market automatically affects the prices of other markets in the same event. This is the default correlation type.\n\n- **Independent**: Markets operate independently. Each market's price is calculated separately, and betting on one market does not affect others.\n\nThe correlation type determines how prices are calculated and how bets impact market dynamics within an event.\n\n### Limit Orders\n\nBets are placed through **Limit Orders**, which allow you to specify how you want to participate in a market. Orders can be created in two ways:\n\n- **By Market** (Market Order): Place an order without specifying a price (`price=None`). The order will be executed immediately at the best available price in the order book. You're willing to accept whatever price is currently available for matching your bid (buy) or ask (sell) order.\n\n- **By Price** (Limit Order): Place an order with a specific price you're willing to pay (for buy orders) or receive (for sell orders). The order will be executed when the market price reaches your specified price, or remain in the order book until a matching order is found.\n\nLimit orders provide flexibility in how you enter and exit positions, allowing you to set precise price targets or execute immediately at current market prices.\n\n## Rate Limiting\nTo ensure the quality and accessibility of our API, we enforce certain rate limits per user.\nThe limit rates are the following per user:\n\n* **2000 requests / minute**\n* **30000 requests / day**\n\nPlease be aware that exceeding these limits may result in your access to the API being temporarily suspended.\n\nFor more detailed information about the various available endpoints, the expected input parameters, the response\nformat, error codes to anticipate, and more, please refer to our detailed API documentation or contact our\nsupport team at support@futuur.com.\n\nP.S.: Any attempt to submit the same post request within less than 1 second will result in an 'wager_action_duplicated' error code."
+    },
+    "paths": {
+        "/events/": {
+            "get": {
+                "operationId": "List Events",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "categories",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "currency_mode",
+                        "schema": {
+                            "enum": [
+                                "play_money",
+                                "real_money"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "0deb4f1ad1c60037",
+                            "default": "play_money",
+                            "minLength": 1
+                        },
+                        "description": "* `play_money` - Play money\n* `real_money` - Real money"
+                    },
+                    {
+                        "in": "query",
+                        "name": "hide_my_bets",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "live",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "only_markets_i_follow",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "pending_resolution",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "resolved_only",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100,
+                            "minLength": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "tag",
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100,
+                            "minLength": 1
+                        }
+                    }
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedEventListList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/events/{id}/": {
+            "get": {
+                "operationId": "Retrieve Event",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this event.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EventDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/events/{id}/actions/": {
+            "get": {
+                "operationId": "Actions",
+                "description": "List all event's Actions.\n\nReal money actions have users information anonymized.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "currency_mode",
+                        "schema": {
+                            "enum": [
+                                "play_money",
+                                "real_money",
+                                ""
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "0deb4f1ad1c60037"
+                        },
+                        "description": "* `play_money` - Play money\n* `real_money` - Real money"
+                    },
+                    {
+                        "in": "query",
+                        "name": "following",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this event.",
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "my_bets",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100,
+                            "minLength": 1
+                        }
+                    }
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WagerAction"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/events/{id}/order_book/": {
+            "get": {
+                "operationId": "Order Book",
+                "description": "Get aggregated order book data.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "currency_mode",
+                        "schema": {
+                            "enum": [
+                                "play_money",
+                                "real_money"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "0deb4f1ad1c60037",
+                            "minLength": 1
+                        },
+                        "description": "* `play_money` - Play money\n* `real_money` - Real money",
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this event.",
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "market",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "position",
+                        "schema": {
+                            "enum": [
+                                "l",
+                                "s"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "af1f26d0a377f834",
+                            "default": "l",
+                            "minLength": 1
+                        },
+                        "description": "* `l` - long\n* `s` - short"
+                    }
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderBook"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/events/{id}/price_history/": {
+            "get": {
+                "operationId": "Price History",
+                "description": "Get price history for an event",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "currency_mode",
+                        "schema": {
+                            "enum": [
+                                "play_money",
+                                "real_money"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "0deb4f1ad1c60037",
+                            "minLength": 1
+                        },
+                        "description": "* `play_money` - Play money\n* `real_money` - Real money",
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this event.",
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "time_interval",
+                        "schema": {
+                            "enum": [
+                                "day",
+                                "week",
+                                "month",
+                                "year",
+                                "all_time"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "fe5399a508265c7a",
+                            "minLength": 1
+                        },
+                        "description": "* `day` - Day\n* `week` - Week\n* `month` - Month\n* `year` - Year\n* `all_time` - All Time"
+                    }
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PriceHistory"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/events/{id}/related_events/": {
+            "get": {
+                "operationId": "Related Events",
+                "description": "Return related events of an event",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this event.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RelatedEvent"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/events/{id}/wagers/": {
+            "get": {
+                "operationId": "Wagers",
+                "description": "List all event's wagers",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "active",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "currency_mode",
+                        "schema": {
+                            "enum": [
+                                "play_money",
+                                "real_money"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "0deb4f1ad1c60037",
+                            "default": "play_money",
+                            "minLength": 1
+                        },
+                        "description": "* `play_money` - Play money\n* `real_money` - Real money"
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this event.",
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "past_bets",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WagerList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/me/": {
+            "get": {
+                "operationId": "My information",
+                "description": "Return information about the authenticated user.",
+                "tags": [
+                    "Me"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserPrivate"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/me/ranking/": {
+            "get": {
+                "operationId": "My ranking",
+                "description": "Return the ranking of the authenticated user.",
+                "tags": [
+                    "Me"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserPrivateRanking"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/orders/": {
+            "get": {
+                "operationId": "List Limit Orders",
+                "description": "This mixing let you define throttles_classes per actions by passing a dict to throttle_action_classes attribute.\nThe throttle_classes on throttle_action_classes will be added to the default's ViewSet throttle_classes.\neg.:\nclass MyViewSet(ModelViewSet):\n    throttle_action_classes = {\n        'create': [CustomThrottleClass],\n        'retrieve': [AnonThrottleClass]\n    }",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "categories",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "currencies",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "maxLength": 10
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "currency",
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 4,
+                            "minLength": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "currency_mode",
+                        "schema": {
+                            "enum": [
+                                "play_money",
+                                "real_money"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "0deb4f1ad1c60037",
+                            "minLength": 1
+                        },
+                        "description": "* `play_money` - Play money\n* `real_money` - Real money"
+                    },
+                    {
+                        "in": "query",
+                        "name": "event",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "market",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255,
+                            "minLength": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "side",
+                        "schema": {
+                            "enum": [
+                                "bid",
+                                "ask"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "9463a3ffff0c13f6",
+                            "minLength": 1
+                        },
+                        "description": "* `bid` - Bid\n* `ask` - Ask"
+                    },
+                    {
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "enum": [
+                                "open",
+                                "partial_filled",
+                                "filled",
+                                "canceled",
+                                "processing"
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "fd784168e4f7b1de",
+                            "default": "open",
+                            "minLength": 1
+                        },
+                        "description": "* `open` - open\n* `partial_filled` - partial filled\n* `filled` - filled\n* `canceled` - canceled\n* `processing` - processing"
+                    }
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLimitOrderList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "Create Limit Order",
+                "description": "Create a new limit order.\n\nRequest body (subset):\n  - market (pk, required)\n  - side: \"bid\" | \"ask\" (required)\n  - position: \"long\" | \"short\" (required, market-dependent)\n  - price: decimal string | null (null = market order)\n  - shares: decimal string (required)\n  - amount: decimal string (optional echo for cost validation)\n  - currency: e.g. \"OOM\", \"USDC\" (required)\n  - expired_at: ISO datetime (optional)\n  - cancel_conflicting_orders: bool (default False)\n\nReturns:\n  - 201 Created with LimitOrderSerializer data.\n\nRaises:\n  - RealMoneyForbiddenCountry, RealMoneyBetNotAllowed\n  - EmailNotConfirmed, UserBlockedBets\n  - InvalidHMACKey, UserNotEnoughBalance, InvalidShares\n  - OutcomeDisabled, MarketClosed / OrderBookMarketClosed\n  - OrderBookConflictingOrders, OrderBookInvalidAmount",
+                "tags": [
+                    "Orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddLimitOrder"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddLimitOrder"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddLimitOrder"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LimitOrder"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/orders/{id}/cancel/": {
+            "patch": {
+                "operationId": "Cancel Limit Order",
+                "description": "Cancel an open limit order",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this limit order.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLimitOrder"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLimitOrder"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLimitOrder"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HMAC": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/wagers/": {
+            "get": {
+                "operationId": "List my wagers",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "active",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Filter by active wagers (wagers with status purchased)"
+                    },
+                    {
+                        "in": "query",
+                        "name": "currency_mode",
+                        "schema": {
+                            "enum": [
+                                "play_money",
+                                "real_money",
+                                ""
+                            ],
+                            "type": "string",
+                            "x-spec-enum-id": "0deb4f1ad1c60037"
+                        },
+                        "description": "* `play_money` - Play money\n* `real_money` - Real money"
+                    },
+                    {
+                        "in": "query",
+                        "name": "event",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "following",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Filter by bets made by users I follow."
+                    },
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "past_bets",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Filter by not active wagers (wagers with status sold, won, lost, disabled)"
+                    },
+                    {
+                        "in": "query",
+                        "name": "user",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Wagers"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedWagerListList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/wagers/{id}/": {
+            "get": {
+                "operationId": "Retrieve wager",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this wager.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Wagers"
+                ],
+                "security": [
+                    {
+                        "HMAC": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WagerDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AddLimitOrder": {
+                "type": "object",
+                "properties": {
+                    "market": {
+                        "type": "integer"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1,
+                        "minimum": 0.0,
+                        "nullable": true,
+                        "description": "Limit price per share the user is willing to pay or receive."
+                    },
+                    "shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "currency": {
+                        "enum": [
+                            "USDC",
+                            "USDT",
+                            "USD",
+                            "OOM"
+                        ],
+                        "type": "string",
+                        "description": "* `USDC` - USDC\n* `USDT` - USDT\n* `USD` - USD\n* `OOM` - OOM",
+                        "x-spec-enum-id": "b68a6290885768ef"
+                    },
+                    "position": {
+                        "enum": [
+                            "l",
+                            "s"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "af1f26d0a377f834",
+                        "description": "'long': bets in favor of the outcome, 'short': bets against the outcome.\n\n* `l` - long\n* `s` - short"
+                    },
+                    "side": {
+                        "enum": [
+                            "bid",
+                            "ask"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "9463a3ffff0c13f6",
+                        "description": "'bid': purchase, 'ask': sell.\n\n* `bid` - Bid\n* `ask` - Ask"
+                    },
+                    "expired_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "cancel_conflicting_orders": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "bet_location": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "sell_location": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "source": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "currency",
+                    "market",
+                    "side"
+                ]
+            },
+            "AskLevel": {
+                "type": "object",
+                "properties": {
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000,
+                        "minimum": -1000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "total_shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "total_amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "cumulative_shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "cumulative_amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "total_user_shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "total_user_shares_requested": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    }
+                },
+                "required": [
+                    "cumulative_amount",
+                    "cumulative_shares",
+                    "price",
+                    "total_amount",
+                    "total_shares"
+                ]
+            },
+            "BidLevel": {
+                "type": "object",
+                "properties": {
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000,
+                        "minimum": -1000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "total_shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "total_amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "cumulative_shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "cumulative_amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "total_user_shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "total_user_shares_requested": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    }
+                },
+                "required": [
+                    "cumulative_amount",
+                    "cumulative_shares",
+                    "price",
+                    "total_amount",
+                    "total_shares"
+                ]
+            },
+            "CategoryBase": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 75
+                    },
+                    "slug": {
+                        "type": "string",
+                        "description": "The slug is used to populate the URLs.",
+                        "maxLength": 75,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "parent": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "in_leaderboard": {
+                        "type": "boolean"
+                    },
+                    "icon": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "id",
+                    "slug",
+                    "title"
+                ]
+            },
+            "EventBase": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "slug": {
+                        "type": "string",
+                        "description": "The slug is used to populate the URLs.",
+                        "maxLength": 150,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "status": {
+                        "enum": [
+                            "o",
+                            "s",
+                            "c",
+                            "x",
+                            "p",
+                            "r"
+                        ],
+                        "type": "string",
+                        "description": "* `o` - open\n* `s` - stopped\n* `c` - resolved\n* `x` - cancelled\n* `p` - paused\n* `r` - reversed",
+                        "x-spec-enum-id": "bf307b5c2f825812"
+                    },
+                    "is_wagerable": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "resolve_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date/time when resolution was set."
+                    },
+                    "bet_end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date/time to end betting."
+                    },
+                    "order_book_enabled": {
+                        "type": "boolean",
+                        "description": "If enabled, Question will use Order Book to place bet instead of AMM(LsLmsr)."
+                    },
+                    "markets_correlation": {
+                        "enum": [
+                            "linked",
+                            "independent"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "259502f2cbb47988",
+                        "description": "<b>Linked prices:</b> Sum of markets prices sums to 1. A bet in one market affect other markets prices.<br><b>Independent:</b> Each market is independent from each other.\n\n* `linked` - Linked prices\n* `independent` - Independent"
+                    },
+                    "markets_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "id",
+                    "is_wagerable",
+                    "markets_count",
+                    "slug",
+                    "title"
+                ]
+            },
+            "EventDetail": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "slug": {
+                        "type": "string",
+                        "description": "The slug is used to populate the URLs.",
+                        "maxLength": 150,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "status": {
+                        "enum": [
+                            "o",
+                            "s",
+                            "c",
+                            "x",
+                            "p",
+                            "r"
+                        ],
+                        "type": "string",
+                        "description": "* `o` - open\n* `s` - stopped\n* `c` - resolved\n* `x` - cancelled\n* `p` - paused\n* `r` - reversed",
+                        "x-spec-enum-id": "bf307b5c2f825812"
+                    },
+                    "status_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EventTag"
+                        },
+                        "readOnly": true
+                    },
+                    "bet_end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date/time to end betting."
+                    },
+                    "event_start_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "event_end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "is_wagerable": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "available_currencies": {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "BCH",
+                                "BNB",
+                                "BRL",
+                                "BTC",
+                                "BUSD",
+                                "DOGE",
+                                "ETH",
+                                "EUR",
+                                "LTC",
+                                "LTCT",
+                                "MXN",
+                                "OOM",
+                                "SOL",
+                                "TRX",
+                                "USD",
+                                "USDC",
+                                "USDT",
+                                "XMR"
+                            ],
+                            "type": "string",
+                            "description": "* `BCH` - BCH\n* `BNB` - BNB\n* `BRL` - BRL R$\n* `BTC` - BTC ₿\n* `BUSD` - BUSD\n* `DOGE` - DOGE\n* `ETH` - ETH\n* `EUR` - EUR €\n* `LTC` - LTC Ł\n* `LTCT` - LTCT (test coin)\n* `MXN` - MXN MX$\n* `OOM` - OOM ø\n* `SOL` - SOL\n* `TRX` - TRX\n* `USD` - USD $\n* `USDC` - USDC\n* `USDT` - USDT\n* `XMR` - XMR",
+                            "x-spec-enum-id": "9626ac7693c6118e"
+                        },
+                        "maxItems": 10
+                    },
+                    "resolution": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "resolve_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date/time when resolution was set."
+                    },
+                    "real_currency_available": {
+                        "type": "boolean"
+                    },
+                    "is_binary": {
+                        "type": "boolean",
+                        "nullable": true,
+                        "description": "If the event has only two markets and they are correlated."
+                    },
+                    "canonical_currency": {
+                        "enum": [
+                            "BCH",
+                            "BNB",
+                            "BRL",
+                            "BTC",
+                            "BUSD",
+                            "DOGE",
+                            "ETH",
+                            "EUR",
+                            "LTC",
+                            "LTCT",
+                            "MXN",
+                            "OOM",
+                            "SOL",
+                            "TRX",
+                            "USD",
+                            "USDC",
+                            "USDT",
+                            "XMR"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "9626ac7693c6118e",
+                        "description": "All bets in real currency will be converted to this currency.\n\n* `BCH` - BCH\n* `BNB` - BNB\n* `BRL` - BRL R$\n* `BTC` - BTC ₿\n* `BUSD` - BUSD\n* `DOGE` - DOGE\n* `ETH` - ETH\n* `EUR` - EUR €\n* `LTC` - LTC Ł\n* `LTCT` - LTCT (test coin)\n* `MXN` - MXN MX$\n* `OOM` - OOM ø\n* `SOL` - SOL\n* `TRX` - TRX\n* `USD` - USD $\n* `USDC` - USDC\n* `USDT` - USDT\n* `XMR` - XMR"
+                    },
+                    "outcomes_type": {
+                        "enum": [
+                            "custom",
+                            "yesno",
+                            "updown"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "2e56781379f308a3",
+                        "description": "This field defines how to render the market card.\n\n* `custom` - Custom names\n* `yesno` - Yes/No\n* `updown` - Up/Down"
+                    },
+                    "order_book_enabled": {
+                        "type": "boolean",
+                        "description": "If enabled, Question will use Order Book to place bet instead of AMM(LsLmsr)."
+                    },
+                    "thumbnail": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "tax_play_money": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1,
+                        "minimum": 0,
+                        "nullable": true,
+                        "description": "[0, 1] - Tax for play money. Applied on AMM(LsLmsr).<br>Leave blank to inherit from the category."
+                    },
+                    "tax_real_money": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1,
+                        "minimum": 0,
+                        "nullable": true,
+                        "description": "[0, 1] - Tax for real money. Applied on AMM(LsLmsr).<br>Leave blank to inherit from the category."
+                    },
+                    "markets_correlation": {
+                        "enum": [
+                            "linked",
+                            "independent"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "259502f2cbb47988",
+                        "description": "<b>Linked prices:</b> Sum of markets prices sums to 1. A bet in one market affect other markets prices.<br><b>Independent:</b> Each market is independent from each other.\n\n* `linked` - Linked prices\n* `independent` - Independent"
+                    },
+                    "wagers_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Wagers count in play money"
+                    },
+                    "wagers_count_canonical": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Wagers count in real money"
+                    },
+                    "wagers_count_total": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "comment_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Total number of comments created for this market."
+                    },
+                    "volume_play_money": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "volume_real_money": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "is_following": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "category": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CategoryBase"
+                        },
+                        "readOnly": true
+                    },
+                    "markets": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MarketList"
+                        },
+                        "readOnly": true
+                    },
+                    "relevance": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "hot": {
+                        "type": "boolean",
+                        "description": "Hot events earns relevance in feed."
+                    },
+                    "is_new": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "transactions_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "purchases and sales for OOM"
+                    },
+                    "transactions_count_canonical": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "purchases and sales for BTC"
+                    },
+                    "cancellation_reason": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 1000
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "time_interval": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "suggested_by": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/UserBasic"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "is_real_money_bets_forbidden": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "brier_score_real_money": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10,
+                        "minimum": -10,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "brier_score_play_money": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10,
+                        "minimum": -10,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "readOnly": true,
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "brier_score_play_money",
+                    "brier_score_real_money",
+                    "category",
+                    "comment_count",
+                    "id",
+                    "is_following",
+                    "is_new",
+                    "is_real_money_bets_forbidden",
+                    "is_wagerable",
+                    "markets",
+                    "relevance",
+                    "slug",
+                    "status_display",
+                    "suggested_by",
+                    "tags",
+                    "thumbnail",
+                    "time_interval",
+                    "title",
+                    "transactions_count",
+                    "transactions_count_canonical",
+                    "volume_play_money",
+                    "volume_real_money",
+                    "wagers_count",
+                    "wagers_count_canonical",
+                    "wagers_count_total"
+                ]
+            },
+            "EventList": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "slug": {
+                        "type": "string",
+                        "description": "The slug is used to populate the URLs.",
+                        "maxLength": 150,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "status": {
+                        "enum": [
+                            "o",
+                            "s",
+                            "c",
+                            "x",
+                            "p",
+                            "r"
+                        ],
+                        "type": "string",
+                        "description": "* `o` - open\n* `s` - stopped\n* `c` - resolved\n* `x` - cancelled\n* `p` - paused\n* `r` - reversed",
+                        "x-spec-enum-id": "bf307b5c2f825812"
+                    },
+                    "status_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EventTag"
+                        },
+                        "readOnly": true
+                    },
+                    "bet_end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date/time to end betting."
+                    },
+                    "event_start_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "event_end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "is_wagerable": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "available_currencies": {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "BCH",
+                                "BNB",
+                                "BRL",
+                                "BTC",
+                                "BUSD",
+                                "DOGE",
+                                "ETH",
+                                "EUR",
+                                "LTC",
+                                "LTCT",
+                                "MXN",
+                                "OOM",
+                                "SOL",
+                                "TRX",
+                                "USD",
+                                "USDC",
+                                "USDT",
+                                "XMR"
+                            ],
+                            "type": "string",
+                            "description": "* `BCH` - BCH\n* `BNB` - BNB\n* `BRL` - BRL R$\n* `BTC` - BTC ₿\n* `BUSD` - BUSD\n* `DOGE` - DOGE\n* `ETH` - ETH\n* `EUR` - EUR €\n* `LTC` - LTC Ł\n* `LTCT` - LTCT (test coin)\n* `MXN` - MXN MX$\n* `OOM` - OOM ø\n* `SOL` - SOL\n* `TRX` - TRX\n* `USD` - USD $\n* `USDC` - USDC\n* `USDT` - USDT\n* `XMR` - XMR",
+                            "x-spec-enum-id": "9626ac7693c6118e"
+                        },
+                        "maxItems": 10
+                    },
+                    "resolution": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "resolve_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date/time when resolution was set."
+                    },
+                    "real_currency_available": {
+                        "type": "boolean"
+                    },
+                    "is_binary": {
+                        "type": "boolean",
+                        "nullable": true,
+                        "description": "If the event has only two markets and they are correlated."
+                    },
+                    "canonical_currency": {
+                        "enum": [
+                            "BCH",
+                            "BNB",
+                            "BRL",
+                            "BTC",
+                            "BUSD",
+                            "DOGE",
+                            "ETH",
+                            "EUR",
+                            "LTC",
+                            "LTCT",
+                            "MXN",
+                            "OOM",
+                            "SOL",
+                            "TRX",
+                            "USD",
+                            "USDC",
+                            "USDT",
+                            "XMR"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "9626ac7693c6118e",
+                        "description": "All bets in real currency will be converted to this currency.\n\n* `BCH` - BCH\n* `BNB` - BNB\n* `BRL` - BRL R$\n* `BTC` - BTC ₿\n* `BUSD` - BUSD\n* `DOGE` - DOGE\n* `ETH` - ETH\n* `EUR` - EUR €\n* `LTC` - LTC Ł\n* `LTCT` - LTCT (test coin)\n* `MXN` - MXN MX$\n* `OOM` - OOM ø\n* `SOL` - SOL\n* `TRX` - TRX\n* `USD` - USD $\n* `USDC` - USDC\n* `USDT` - USDT\n* `XMR` - XMR"
+                    },
+                    "outcomes_type": {
+                        "enum": [
+                            "custom",
+                            "yesno",
+                            "updown"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "2e56781379f308a3",
+                        "description": "This field defines how to render the market card.\n\n* `custom` - Custom names\n* `yesno` - Yes/No\n* `updown` - Up/Down"
+                    },
+                    "order_book_enabled": {
+                        "type": "boolean",
+                        "description": "If enabled, Question will use Order Book to place bet instead of AMM(LsLmsr)."
+                    },
+                    "thumbnail": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "tax_play_money": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1,
+                        "minimum": 0,
+                        "nullable": true,
+                        "description": "[0, 1] - Tax for play money. Applied on AMM(LsLmsr).<br>Leave blank to inherit from the category."
+                    },
+                    "tax_real_money": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1,
+                        "minimum": 0,
+                        "nullable": true,
+                        "description": "[0, 1] - Tax for real money. Applied on AMM(LsLmsr).<br>Leave blank to inherit from the category."
+                    },
+                    "markets_correlation": {
+                        "enum": [
+                            "linked",
+                            "independent"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "259502f2cbb47988",
+                        "description": "<b>Linked prices:</b> Sum of markets prices sums to 1. A bet in one market affect other markets prices.<br><b>Independent:</b> Each market is independent from each other.\n\n* `linked` - Linked prices\n* `independent` - Independent"
+                    },
+                    "wagers_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Wagers count in play money"
+                    },
+                    "wagers_count_canonical": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Wagers count in real money"
+                    },
+                    "wagers_count_total": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "comment_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Total number of comments created for this market."
+                    },
+                    "volume_play_money": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "volume_real_money": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "is_following": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "category": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CategoryBase"
+                        },
+                        "readOnly": true
+                    },
+                    "markets": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MarketList"
+                        },
+                        "readOnly": true
+                    },
+                    "relevance": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "hot": {
+                        "type": "boolean",
+                        "description": "Hot events earns relevance in feed."
+                    },
+                    "is_new": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "category",
+                    "comment_count",
+                    "id",
+                    "is_following",
+                    "is_new",
+                    "is_wagerable",
+                    "markets",
+                    "relevance",
+                    "slug",
+                    "status_display",
+                    "tags",
+                    "thumbnail",
+                    "title",
+                    "volume_play_money",
+                    "volume_real_money",
+                    "wagers_count",
+                    "wagers_count_canonical",
+                    "wagers_count_total"
+                ]
+            },
+            "EventTag": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "slug": {
+                        "type": "string",
+                        "description": "The slug is used to populate the URLs.",
+                        "maxLength": 150,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    }
+                },
+                "required": [
+                    "name",
+                    "slug"
+                ]
+            },
+            "LimitOrder": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "event": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "market": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1,
+                        "minimum": 0.0,
+                        "nullable": true,
+                        "description": "Limit price per share the user is willing to pay or receive."
+                    },
+                    "shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "shares_requested": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "shares_filled": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "maxLength": 11
+                    },
+                    "side": {
+                        "enum": [
+                            "bid",
+                            "ask"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "9463a3ffff0c13f6",
+                        "description": "'bid': purchase, 'ask': sell.\n\n* `bid` - Bid\n* `ask` - Ask"
+                    },
+                    "position": {
+                        "enum": [
+                            "l",
+                            "s"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "af1f26d0a377f834",
+                        "description": "'long': bets in favor of the outcome, 'short': bets against the outcome.\n\n* `l` - long\n* `s` - short"
+                    },
+                    "expired_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date and time when the order will expire."
+                    },
+                    "status": {
+                        "enum": [
+                            "open",
+                            "partial_filled",
+                            "filled",
+                            "canceled",
+                            "processing"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "fd784168e4f7b1de",
+                        "description": "Current status of the order.\n\n* `open` - open\n* `partial_filled` - partial filled\n* `filled` - filled\n* `canceled` - canceled\n* `processing` - processing"
+                    },
+                    "created": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "Date and time when the order was created."
+                    }
+                },
+                "required": [
+                    "created",
+                    "event",
+                    "id",
+                    "market",
+                    "shares",
+                    "shares_filled",
+                    "shares_requested",
+                    "side"
+                ]
+            },
+            "MarketList": {
+                "type": "object",
+                "description": "PERFORMANCE TIP: Use select_related('entity') on Market queryset.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "title_verbose": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Detailed title for the market.<br>Leave blank to auto generate from the event title.",
+                        "maxLength": 250
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000,
+                        "minimum": -1000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "nullable": true,
+                        "title": "Calculated probability PM",
+                        "readOnly": true
+                    },
+                    "long_label": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 50
+                    },
+                    "short_label": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 50
+                    },
+                    "status": {
+                        "enum": [
+                            "active",
+                            "resolved",
+                            "paused",
+                            "stopped",
+                            "cancelled",
+                            "reversed"
+                        ],
+                        "type": "string",
+                        "description": "* `active` - active\n* `resolved` - resolved\n* `paused` - paused\n* `stopped` - stopped\n* `cancelled` - cancelled\n* `reversed` - reversed",
+                        "x-spec-enum-id": "9f584ca612230096"
+                    },
+                    "resolution": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "resolution_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "position_labels": {
+                        "enum": [
+                            "yesno",
+                            "updown",
+                            "custom"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "eb9d873f7111305c",
+                        "description": "Long/Short\n\n* `yesno` - Yes/No\n* `updown` - Up/Down\n* `custom` - Custom"
+                    },
+                    "thumbnail": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "order": {
+                        "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "id",
+                    "price",
+                    "resolution",
+                    "resolution_display",
+                    "thumbnail",
+                    "title"
+                ]
+            },
+            "OrderBook": {
+                "type": "object",
+                "properties": {
+                    "ask": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AskLevel"
+                        }
+                    },
+                    "bid": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BidLevel"
+                        }
+                    }
+                },
+                "required": [
+                    "ask",
+                    "bid"
+                ]
+            },
+            "PaginatedEventListList": {
+                "type": "object",
+                "properties": {
+                    "pagination": {
+                        "type": "dict",
+                        "example": {
+                            "total": 40,
+                            "next": "http://api.example.org/accounts/?p=20",
+                            "previous": "null",
+                            "page_size": 20,
+                            "offset": 0
+                        }
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EventList"
+                        }
+                    }
+                }
+            },
+            "PaginatedLimitOrderList": {
+                "type": "object",
+                "properties": {
+                    "pagination": {
+                        "type": "dict",
+                        "example": {
+                            "total": 40,
+                            "next": "http://api.example.org/accounts/?p=20",
+                            "previous": "null",
+                            "page_size": 20,
+                            "offset": 0
+                        }
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LimitOrder"
+                        }
+                    }
+                }
+            },
+            "PaginatedWagerListList": {
+                "type": "object",
+                "properties": {
+                    "pagination": {
+                        "type": "dict",
+                        "example": {
+                            "total": 40,
+                            "next": "http://api.example.org/accounts/?p=20",
+                            "previous": "null",
+                            "page_size": 20,
+                            "offset": 0
+                        }
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WagerList"
+                        }
+                    }
+                }
+            },
+            "PatchedLimitOrder": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "event": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "market": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1,
+                        "minimum": 0.0,
+                        "nullable": true,
+                        "description": "Limit price per share the user is willing to pay or receive."
+                    },
+                    "shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "shares_requested": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 1000000000000000000,
+                        "minimum": -1000000000000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true
+                    },
+                    "shares_filled": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "maxLength": 11
+                    },
+                    "side": {
+                        "enum": [
+                            "bid",
+                            "ask"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "9463a3ffff0c13f6",
+                        "description": "'bid': purchase, 'ask': sell.\n\n* `bid` - Bid\n* `ask` - Ask"
+                    },
+                    "position": {
+                        "enum": [
+                            "l",
+                            "s"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "af1f26d0a377f834",
+                        "description": "'long': bets in favor of the outcome, 'short': bets against the outcome.\n\n* `l` - long\n* `s` - short"
+                    },
+                    "expired_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date and time when the order will expire."
+                    },
+                    "status": {
+                        "enum": [
+                            "open",
+                            "partial_filled",
+                            "filled",
+                            "canceled",
+                            "processing"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "fd784168e4f7b1de",
+                        "description": "Current status of the order.\n\n* `open` - open\n* `partial_filled` - partial filled\n* `filled` - filled\n* `canceled` - canceled\n* `processing` - processing"
+                    },
+                    "created": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "Date and time when the order was created."
+                    }
+                }
+            },
+            "PriceHistory": {
+                "type": "object",
+                "properties": {
+                    "currency_mode": {
+                        "enum": [
+                            "play_money",
+                            "real_money"
+                        ],
+                        "type": "string",
+                        "description": "* `play_money` - Play money\n* `real_money` - Real money",
+                        "x-spec-enum-id": "0deb4f1ad1c60037"
+                    },
+                    "time_interval": {
+                        "enum": [
+                            "day",
+                            "week",
+                            "month",
+                            "year",
+                            "all_time"
+                        ],
+                        "type": "string",
+                        "description": "* `day` - Day\n* `week` - Week\n* `month` - Month\n* `year` - Year\n* `all_time` - All Time",
+                        "x-spec-enum-id": "fe5399a508265c7a"
+                    }
+                },
+                "required": [
+                    "currency_mode"
+                ]
+            },
+            "RelatedEvent": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 150
+                    },
+                    "wagers_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Wagers count in play money"
+                    },
+                    "wagers_count_canonical": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Wagers count in real money"
+                    },
+                    "volume_play_money": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "volume_real_money": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "bet_end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date/time to end betting."
+                    },
+                    "event_start_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "highest_market": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "highest_market_real_money": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "highest_market",
+                    "highest_market_real_money",
+                    "id",
+                    "title",
+                    "volume_play_money",
+                    "volume_real_money",
+                    "wagers_count",
+                    "wagers_count_canonical"
+                ]
+            },
+            "UserBasic": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "username": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 50,
+                        "minLength": 3,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "picture": {
+                        "type": "string",
+                        "format": "uri"
+                    }
+                },
+                "required": [
+                    "id"
+                ]
+            },
+            "UserPrivate": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "username": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 50,
+                        "minLength": 3,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "picture": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 50
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 50
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 254
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "gender": {
+                        "enum": [
+                            "f",
+                            "m",
+                            "",
+                            null
+                        ],
+                        "type": "string",
+                        "description": "* `f` - female\n* `m` - male",
+                        "x-spec-enum-id": "305cc1d9a80314c9",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 255
+                    },
+                    "wallet": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "readOnly": true,
+                        "description": "A dictionary containing all the currencies available in your wallet."
+                    },
+                    "password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "maxLength": 128
+                    },
+                    "is_staff": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "title": "Access to admin area"
+                    },
+                    "settings": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "api_version": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "attribution": {},
+                    "real_currency_enabled": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "email_confirmed": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "title": "Active"
+                    },
+                    "date_joined": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "sort_algorithm": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "active_country": {
+                        "type": "string",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "Country set from last IP user has accessed"
+                    },
+                    "kyc_status": {
+                        "enum": [
+                            "no_need",
+                            "requested",
+                            "initialized",
+                            "refused",
+                            "approved",
+                            "by_passed"
+                        ],
+                        "type": "string",
+                        "description": "* `no_need` - no need\n* `requested` - requested\n* `initialized` - initialized\n* `refused` - refused\n* `approved` - approved\n* `by_passed` - by passed",
+                        "x-spec-enum-id": "be6f8dc2fb4e4966",
+                        "readOnly": true
+                    },
+                    "pre_kyc_completed": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "This field is automatically filled when user completes the pre-KYC process."
+                    },
+                    "block_bets": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "description": "If checked, user won't be able to bet. This flag can be automatically override by the SumSub integration."
+                    },
+                    "block_deposits": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "description": "If checked, user won't be able to fetch a new address for deposit. This flag can be automatically override by the SumSub integration."
+                    },
+                    "residence_country": {
+                        "enum": [
+                            "AF",
+                            "AX",
+                            "AL",
+                            "DZ",
+                            "AS",
+                            "AD",
+                            "AO",
+                            "AI",
+                            "AQ",
+                            "AG",
+                            "AR",
+                            "AM",
+                            "AW",
+                            "AU",
+                            "AT",
+                            "AZ",
+                            "BS",
+                            "BH",
+                            "BD",
+                            "BB",
+                            "BY",
+                            "BE",
+                            "BZ",
+                            "BJ",
+                            "BM",
+                            "BT",
+                            "BO",
+                            "BQ",
+                            "BA",
+                            "BW",
+                            "BV",
+                            "BR",
+                            "IO",
+                            "VG",
+                            "BN",
+                            "BG",
+                            "BF",
+                            "BI",
+                            "KH",
+                            "CM",
+                            "CA",
+                            "CV",
+                            "KY",
+                            "CF",
+                            "TD",
+                            "CL",
+                            "CN",
+                            "CX",
+                            "CC",
+                            "CO",
+                            "KM",
+                            "CK",
+                            "CR",
+                            "HR",
+                            "CU",
+                            "CW",
+                            "CY",
+                            "CZ",
+                            "CD",
+                            "DK",
+                            "DJ",
+                            "DM",
+                            "DO",
+                            "TL",
+                            "EC",
+                            "EG",
+                            "SV",
+                            "GQ",
+                            "ER",
+                            "EE",
+                            "ET",
+                            "FK",
+                            "FO",
+                            "FJ",
+                            "FI",
+                            "FR",
+                            "GF",
+                            "PF",
+                            "TF",
+                            "GA",
+                            "GM",
+                            "GE",
+                            "DE",
+                            "GH",
+                            "GI",
+                            "GR",
+                            "GL",
+                            "GD",
+                            "GP",
+                            "GU",
+                            "GT",
+                            "GG",
+                            "GN",
+                            "GW",
+                            "GY",
+                            "HT",
+                            "HM",
+                            "HN",
+                            "HK",
+                            "HU",
+                            "IS",
+                            "IN",
+                            "ID",
+                            "IR",
+                            "IQ",
+                            "IE",
+                            "IM",
+                            "IL",
+                            "IT",
+                            "CI",
+                            "JM",
+                            "JP",
+                            "JE",
+                            "JO",
+                            "KZ",
+                            "KE",
+                            "KI",
+                            "XK",
+                            "KW",
+                            "KG",
+                            "LA",
+                            "LV",
+                            "LB",
+                            "LS",
+                            "LR",
+                            "LY",
+                            "LI",
+                            "LT",
+                            "LU",
+                            "MO",
+                            "MK",
+                            "MG",
+                            "MW",
+                            "MY",
+                            "MV",
+                            "ML",
+                            "MT",
+                            "MH",
+                            "MQ",
+                            "MR",
+                            "MU",
+                            "YT",
+                            "MX",
+                            "FM",
+                            "MD",
+                            "MC",
+                            "MN",
+                            "ME",
+                            "MS",
+                            "MA",
+                            "MZ",
+                            "MM",
+                            "NA",
+                            "NR",
+                            "NP",
+                            "NL",
+                            "NC",
+                            "NZ",
+                            "NI",
+                            "NE",
+                            "NG",
+                            "NU",
+                            "NF",
+                            "KP",
+                            "MP",
+                            "NO",
+                            "OM",
+                            "PK",
+                            "PW",
+                            "PS",
+                            "PA",
+                            "PG",
+                            "PY",
+                            "PE",
+                            "PH",
+                            "PN",
+                            "PL",
+                            "PT",
+                            "PR",
+                            "QA",
+                            "CG",
+                            "RE",
+                            "RO",
+                            "RU",
+                            "RW",
+                            "BL",
+                            "SH",
+                            "KN",
+                            "LC",
+                            "MF",
+                            "PM",
+                            "VC",
+                            "WS",
+                            "SM",
+                            "ST",
+                            "SA",
+                            "SN",
+                            "RS",
+                            "SC",
+                            "SL",
+                            "SG",
+                            "SX",
+                            "SK",
+                            "SI",
+                            "SB",
+                            "SO",
+                            "ZA",
+                            "GS",
+                            "KR",
+                            "SS",
+                            "ES",
+                            "LK",
+                            "SD",
+                            "SR",
+                            "SJ",
+                            "SZ",
+                            "SE",
+                            "CH",
+                            "SY",
+                            "TW",
+                            "TJ",
+                            "TZ",
+                            "TH",
+                            "TG",
+                            "TK",
+                            "TO",
+                            "TT",
+                            "TN",
+                            "TR",
+                            "TM",
+                            "TC",
+                            "TV",
+                            "VI",
+                            "UG",
+                            "UA",
+                            "AE",
+                            "GB",
+                            "US",
+                            "UM",
+                            "UY",
+                            "UZ",
+                            "VU",
+                            "VA",
+                            "VE",
+                            "VN",
+                            "WF",
+                            "EH",
+                            "YE",
+                            "ZM",
+                            "ZW",
+                            "",
+                            null
+                        ],
+                        "type": "string",
+                        "description": "* `AF` - Afghanistan\n* `AX` - Aland Islands\n* `AL` - Albania\n* `DZ` - Algeria\n* `AS` - American Samoa\n* `AD` - Andorra\n* `AO` - Angola\n* `AI` - Anguilla\n* `AQ` - Antarctica\n* `AG` - Antigua and Barbuda\n* `AR` - Argentina\n* `AM` - Armenia\n* `AW` - Aruba\n* `AU` - Australia\n* `AT` - Austria\n* `AZ` - Azerbaijan\n* `BS` - Bahamas\n* `BH` - Bahrain\n* `BD` - Bangladesh\n* `BB` - Barbados\n* `BY` - Belarus\n* `BE` - Belgium\n* `BZ` - Belize\n* `BJ` - Benin\n* `BM` - Bermuda\n* `BT` - Bhutan\n* `BO` - Bolivia\n* `BQ` - Bonaire, Saint Eustatius and Saba \n* `BA` - Bosnia and Herzegovina\n* `BW` - Botswana\n* `BV` - Bouvet Island\n* `BR` - Brazil\n* `IO` - British Indian Ocean Territory\n* `VG` - British Virgin Islands\n* `BN` - Brunei\n* `BG` - Bulgaria\n* `BF` - Burkina Faso\n* `BI` - Burundi\n* `KH` - Cambodia\n* `CM` - Cameroon\n* `CA` - Canada\n* `CV` - Cape Verde\n* `KY` - Cayman Islands\n* `CF` - Central African Republic\n* `TD` - Chad\n* `CL` - Chile\n* `CN` - China\n* `CX` - Christmas Island\n* `CC` - Cocos Islands\n* `CO` - Colombia\n* `KM` - Comoros\n* `CK` - Cook Islands\n* `CR` - Costa Rica\n* `HR` - Croatia\n* `CU` - Cuba\n* `CW` - Curacao\n* `CY` - Cyprus\n* `CZ` - Czech Republic\n* `CD` - Democratic Republic of the Congo\n* `DK` - Denmark\n* `DJ` - Djibouti\n* `DM` - Dominica\n* `DO` - Dominican Republic\n* `TL` - East Timor\n* `EC` - Ecuador\n* `EG` - Egypt\n* `SV` - El Salvador\n* `GQ` - Equatorial Guinea\n* `ER` - Eritrea\n* `EE` - Estonia\n* `ET` - Ethiopia\n* `FK` - Falkland Islands\n* `FO` - Faroe Islands\n* `FJ` - Fiji\n* `FI` - Finland\n* `FR` - France\n* `GF` - French Guiana\n* `PF` - French Polynesia\n* `TF` - French Southern Territories\n* `GA` - Gabon\n* `GM` - Gambia\n* `GE` - Georgia\n* `DE` - Germany\n* `GH` - Ghana\n* `GI` - Gibraltar\n* `GR` - Greece\n* `GL` - Greenland\n* `GD` - Grenada\n* `GP` - Guadeloupe\n* `GU` - Guam\n* `GT` - Guatemala\n* `GG` - Guernsey\n* `GN` - Guinea\n* `GW` - Guinea-Bissau\n* `GY` - Guyana\n* `HT` - Haiti\n* `HM` - Heard Island and McDonald Islands\n* `HN` - Honduras\n* `HK` - Hong Kong\n* `HU` - Hungary\n* `IS` - Iceland\n* `IN` - India\n* `ID` - Indonesia\n* `IR` - Iran\n* `IQ` - Iraq\n* `IE` - Ireland\n* `IM` - Isle of Man\n* `IL` - Israel\n* `IT` - Italy\n* `CI` - Ivory Coast\n* `JM` - Jamaica\n* `JP` - Japan\n* `JE` - Jersey\n* `JO` - Jordan\n* `KZ` - Kazakhstan\n* `KE` - Kenya\n* `KI` - Kiribati\n* `XK` - Kosovo\n* `KW` - Kuwait\n* `KG` - Kyrgyzstan\n* `LA` - Laos\n* `LV` - Latvia\n* `LB` - Lebanon\n* `LS` - Lesotho\n* `LR` - Liberia\n* `LY` - Libya\n* `LI` - Liechtenstein\n* `LT` - Lithuania\n* `LU` - Luxembourg\n* `MO` - Macao\n* `MK` - Macedonia\n* `MG` - Madagascar\n* `MW` - Malawi\n* `MY` - Malaysia\n* `MV` - Maldives\n* `ML` - Mali\n* `MT` - Malta\n* `MH` - Marshall Islands\n* `MQ` - Martinique\n* `MR` - Mauritania\n* `MU` - Mauritius\n* `YT` - Mayotte\n* `MX` - Mexico\n* `FM` - Micronesia\n* `MD` - Moldova\n* `MC` - Monaco\n* `MN` - Mongolia\n* `ME` - Montenegro\n* `MS` - Montserrat\n* `MA` - Morocco\n* `MZ` - Mozambique\n* `MM` - Myanmar\n* `NA` - Namibia\n* `NR` - Nauru\n* `NP` - Nepal\n* `NL` - Netherlands\n* `NC` - New Caledonia\n* `NZ` - New Zealand\n* `NI` - Nicaragua\n* `NE` - Niger\n* `NG` - Nigeria\n* `NU` - Niue\n* `NF` - Norfolk Island\n* `KP` - North Korea\n* `MP` - Northern Mariana Islands\n* `NO` - Norway\n* `OM` - Oman\n* `PK` - Pakistan\n* `PW` - Palau\n* `PS` - Palestinian Territory\n* `PA` - Panama\n* `PG` - Papua New Guinea\n* `PY` - Paraguay\n* `PE` - Peru\n* `PH` - Philippines\n* `PN` - Pitcairn\n* `PL` - Poland\n* `PT` - Portugal\n* `PR` - Puerto Rico\n* `QA` - Qatar\n* `CG` - Republic of the Congo\n* `RE` - Reunion\n* `RO` - Romania\n* `RU` - Russia\n* `RW` - Rwanda\n* `BL` - Saint Barthelemy\n* `SH` - Saint Helena\n* `KN` - Saint Kitts and Nevis\n* `LC` - Saint Lucia\n* `MF` - Saint Martin\n* `PM` - Saint Pierre and Miquelon\n* `VC` - Saint Vincent and the Grenadines\n* `WS` - Samoa\n* `SM` - San Marino\n* `ST` - Sao Tome and Principe\n* `SA` - Saudi Arabia\n* `SN` - Senegal\n* `RS` - Serbia\n* `SC` - Seychelles\n* `SL` - Sierra Leone\n* `SG` - Singapore\n* `SX` - Sint Maarten\n* `SK` - Slovakia\n* `SI` - Slovenia\n* `SB` - Solomon Islands\n* `SO` - Somalia\n* `ZA` - South Africa\n* `GS` - South Georgia and the South Sandwich Islands\n* `KR` - South Korea\n* `SS` - South Sudan\n* `ES` - Spain\n* `LK` - Sri Lanka\n* `SD` - Sudan\n* `SR` - Suriname\n* `SJ` - Svalbard and Jan Mayen\n* `SZ` - Swaziland\n* `SE` - Sweden\n* `CH` - Switzerland\n* `SY` - Syria\n* `TW` - Taiwan\n* `TJ` - Tajikistan\n* `TZ` - Tanzania\n* `TH` - Thailand\n* `TG` - Togo\n* `TK` - Tokelau\n* `TO` - Tonga\n* `TT` - Trinidad and Tobago\n* `TN` - Tunisia\n* `TR` - Turkey\n* `TM` - Turkmenistan\n* `TC` - Turks and Caicos Islands\n* `TV` - Tuvalu\n* `VI` - U.S. Virgin Islands\n* `UG` - Uganda\n* `UA` - Ukraine\n* `AE` - United Arab Emirates\n* `GB` - United Kingdom\n* `US` - United States\n* `UM` - United States Minor Outlying Islands\n* `UY` - Uruguay\n* `UZ` - Uzbekistan\n* `VU` - Vanuatu\n* `VA` - Vatican\n* `VE` - Venezuela\n* `VN` - Vietnam\n* `WF` - Wallis and Futuna\n* `EH` - Western Sahara\n* `YE` - Yemen\n* `ZM` - Zambia\n* `ZW` - Zimbabwe",
+                        "x-spec-enum-id": "54108d6caa693202",
+                        "nullable": true,
+                        "title": "Country of residence"
+                    },
+                    "public_api_status": {
+                        "enum": [
+                            "blocked",
+                            "no_access",
+                            "requested",
+                            "active"
+                        ],
+                        "type": "string",
+                        "description": "* `blocked` - blocked\n* `no_access` - no access\n* `requested` - requested\n* `active` - granted",
+                        "x-spec-enum-id": "7dc0e7500cc52642"
+                    },
+                    "needs_pre_kyc": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "public_api_real_money_enabled": {
+                        "type": "boolean",
+                        "title": "Allow real money bets with public api",
+                        "readOnly": true
+                    },
+                    "wagers_count_play_money": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "wagers_count_real_money": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "profile": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "test_segments": {
+                        "readOnly": true
+                    },
+                    "username_confirmed": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "has_password_set": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "currencies_with_active_orders": {
+                        "type": "array",
+                        "items": {},
+                        "description": "List of currencies where the user has at least one active order.",
+                        "readOnly": true
+                    },
+                    "is_wallet_user": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "True if the user signed up via wallet (Privy)"
+                    }
+                },
+                "required": [
+                    "active_country",
+                    "api_version",
+                    "block_bets",
+                    "block_deposits",
+                    "currencies_with_active_orders",
+                    "email",
+                    "email_confirmed",
+                    "has_password_set",
+                    "id",
+                    "is_active",
+                    "is_staff",
+                    "is_wallet_user",
+                    "kyc_status",
+                    "needs_pre_kyc",
+                    "password",
+                    "profile",
+                    "public_api_real_money_enabled",
+                    "real_currency_enabled",
+                    "settings",
+                    "sort_algorithm",
+                    "test_segments",
+                    "username_confirmed",
+                    "wagers_count_play_money",
+                    "wagers_count_real_money",
+                    "wallet"
+                ]
+            },
+            "UserPrivateRanking": {
+                "type": "object",
+                "properties": {
+                    "ranking": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "ranking"
+                ]
+            },
+            "WagerAction": {
+                "type": "object",
+                "description": "Serializer for WagerAction.\nPERFORMANCE TIP: Use select_related('outcome', 'outcome__question', 'outcome__entity', 'wager__user', 'wager')\n    on WagerAction queryset.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "market": {
+                        "$ref": "#/components/schemas/MarketList"
+                    },
+                    "event": {
+                        "$ref": "#/components/schemas/EventBase"
+                    },
+                    "user": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "action": {
+                        "enum": [
+                            "s",
+                            "ps",
+                            "p",
+                            "w",
+                            "l",
+                            "x",
+                            "r",
+                            "d"
+                        ],
+                        "type": "string",
+                        "description": "* `s` - sale\n* `ps` - partial sale\n* `p` - purchase\n* `w` - win\n* `l` - lose\n* `x` - cancel\n* `r` - reverse\n* `d` - disable",
+                        "x-spec-enum-id": "219ac7ac4f555982"
+                    },
+                    "price": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "shares": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "created": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "action_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "wager": {
+                        "type": "integer"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "profit": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "nullable": true,
+                        "description": "User's profit of this action compared with active purchases (latest purchases after any sell)"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "position": {
+                        "enum": [
+                            "l",
+                            "s"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "af1f26d0a377f834",
+                        "description": "'Long' for bets in favor of the outcome; 'Short' for bets against the outcome\n\n* `l` - long\n* `s` - short",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "action",
+                    "action_display",
+                    "amount",
+                    "created",
+                    "currency",
+                    "event",
+                    "id",
+                    "market",
+                    "position",
+                    "price",
+                    "shares",
+                    "user",
+                    "wager"
+                ]
+            },
+            "WagerDetail": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "status": {
+                        "enum": [
+                            "l",
+                            "p",
+                            "s",
+                            "w",
+                            "x",
+                            "d"
+                        ],
+                        "type": "string",
+                        "description": "* `l` - lost\n* `p` - purchased\n* `s` - sold\n* `w` - won\n* `x` - cancelled\n* `d` - disabled",
+                        "x-spec-enum-id": "6ba23590ccf2c071"
+                    },
+                    "status_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "user": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "event": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "position": {
+                        "enum": [
+                            "l",
+                            "s"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "af1f26d0a377f834",
+                        "description": "'Long' for bets in favor of the outcome; 'Short' for bets against the outcome\n\n* `l` - long\n* `s` - short"
+                    },
+                    "position_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "maxLength": 11
+                    },
+                    "shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "readOnly": true,
+                        "description": "consolidated shares for that wager"
+                    },
+                    "active_purchases_amount": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "active_purchases": {
+                        "description": "purchases from last outcome bought in that question"
+                    },
+                    "last_purchase": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "last_update": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "market": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "roi": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "earnings": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "amount_on_win": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "amount_on_sell": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "last_profit": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "nullable": true,
+                        "description": "Last profit when question is resolved or wager is sold"
+                    },
+                    "total_amount": {
+                        "type": "string"
+                    },
+                    "last_action": {
+                        "description": "serialized data about last WagerAction on this wager"
+                    },
+                    "actions_count": {
+                        "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": -2147483648,
+                        "nullable": true,
+                        "description": "number of actions triggered by user (purchases, sales)"
+                    },
+                    "last_sell_amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "nullable": true,
+                        "description": "Last sale amount when wager is sold. This value will always be positive"
+                    },
+                    "shares_in_canonical": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "readOnly": true,
+                        "description": "consolidated shares in question's canonical currency"
+                    },
+                    "purchases_amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "nullable": true,
+                        "description": "Cost basis of the open position, based on purchases and adjusted by partial sales."
+                    },
+                    "actions": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "actions",
+                    "active_purchases_amount",
+                    "amount_on_sell",
+                    "amount_on_win",
+                    "earnings",
+                    "event",
+                    "id",
+                    "last_purchase",
+                    "last_update",
+                    "market",
+                    "position_display",
+                    "roi",
+                    "shares",
+                    "shares_in_canonical",
+                    "status",
+                    "status_display",
+                    "total_amount",
+                    "user"
+                ]
+            },
+            "WagerList": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "status": {
+                        "enum": [
+                            "l",
+                            "p",
+                            "s",
+                            "w",
+                            "x",
+                            "d"
+                        ],
+                        "type": "string",
+                        "description": "* `l` - lost\n* `p` - purchased\n* `s` - sold\n* `w` - won\n* `x` - cancelled\n* `d` - disabled",
+                        "x-spec-enum-id": "6ba23590ccf2c071"
+                    },
+                    "status_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "user": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "event": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "position": {
+                        "enum": [
+                            "l",
+                            "s"
+                        ],
+                        "type": "string",
+                        "x-spec-enum-id": "af1f26d0a377f834",
+                        "description": "'Long' for bets in favor of the outcome; 'Short' for bets against the outcome\n\n* `l` - long\n* `s` - short"
+                    },
+                    "position_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "maxLength": 11
+                    },
+                    "shares": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "readOnly": true,
+                        "description": "consolidated shares for that wager"
+                    },
+                    "active_purchases_amount": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "active_purchases": {
+                        "description": "purchases from last outcome bought in that question"
+                    },
+                    "last_purchase": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "last_update": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "market": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "roi": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "earnings": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "amount_on_win": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "amount_on_sell": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "last_profit": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "nullable": true,
+                        "description": "Last profit when question is resolved or wager is sold"
+                    },
+                    "total_amount": {
+                        "type": "string"
+                    },
+                    "last_action": {
+                        "description": "serialized data about last WagerAction on this wager"
+                    },
+                    "actions_count": {
+                        "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": -2147483648,
+                        "nullable": true,
+                        "description": "number of actions triggered by user (purchases, sales)"
+                    },
+                    "last_sell_amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "nullable": true,
+                        "description": "Last sale amount when wager is sold. This value will always be positive"
+                    },
+                    "shares_in_canonical": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "readOnly": true,
+                        "description": "consolidated shares in question's canonical currency"
+                    },
+                    "purchases_amount": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 10000000000,
+                        "minimum": -10000000000,
+                        "exclusiveMaximum": true,
+                        "exclusiveMinimum": true,
+                        "nullable": true,
+                        "description": "Cost basis of the open position, based on purchases and adjusted by partial sales."
+                    }
+                },
+                "required": [
+                    "active_purchases_amount",
+                    "amount_on_sell",
+                    "amount_on_win",
+                    "earnings",
+                    "event",
+                    "id",
+                    "last_purchase",
+                    "last_update",
+                    "market",
+                    "position_display",
+                    "roi",
+                    "shares",
+                    "shares_in_canonical",
+                    "status",
+                    "status_display",
+                    "total_amount",
+                    "user"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "HMAC": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Key",
+                "description": "HMAC Authentication requires three headers:\n\n1. **Key** (header): Your PUBLIC KEY\n2. **Timestamp** (header): Current timestamp in Unix format\n3. **HMAC** (header): SHA-512 hexdigest hash of the request signed with your PRIVATE KEY\n\nThe HMAC signature is created from the full raw headers, POST, and GET data of your request, ordered alphabetically by its keys. For example, if making a request to `markets/?category=5`, you must generate a SHA-512 hash from: `category=5&Key={{your_public_key}}&Timestamp={{current_timestamp}}`\n\nSee the Authentication section in the API documentation for detailed examples.",
+                "x-code-samples": [
+                    {
+                        "lang": "Python",
+                        "source": "import hashlib\nimport hmac\nimport datetime\nfrom collections import OrderedDict\nfrom urllib.parse import urlencode\n\nPRIVATE_KEY = \"your_private_key\"\nPUBLIC_KEY = \"your_public_key\"\n\nparams = {\n    \"Key\": PUBLIC_KEY,\n    \"Timestamp\": int(datetime.datetime.utcnow().timestamp()),\n    \"category\": 5\n}\n\nparams_to_sign = OrderedDict(sorted(list(params.items())))\nparams_to_sign = urlencode(params_to_sign)\nencoded_params = params_to_sign.encode(\"utf-8\")\nencoded_private_key = PRIVATE_KEY.encode(\"utf-8\")\nhmac_signature = hmac.new(encoded_private_key, encoded_params, hashlib.sha512).hexdigest()\n\nheaders = {\n    \"Key\": PUBLIC_KEY,\n    \"Timestamp\": str(params[\"Timestamp\"]),\n    \"HMAC\": hmac_signature\n}"
+                    }
+                ]
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "https://api.futuur.com",
+            "description": "Text"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "### **Authentication**\n\nMost Futuur API endpoints require authentication. Authentication is performed using your API key and is secured by a SHA-512 HMAC.\n\nEach authenticated request must include the following headers:\n\n- **Key**: Your **PUBLIC KEY**\n- **Timestamp**: Current timestamp in Unix format\n- **HMAC**: SHA-512 hexdigest hash of the request signed with your **PRIVATE KEY**\n\n### **How to Generate the HMAC**\n\nThe HMAC signature is created from the full raw headers, POST, and GET data of your request, ordered alphabetically by its keys.\n\nFor example, if making a request to `markets/?category=5`, generate a SHA-512 hash from:\n\n```\ncategory=5&Key={{your_public_key}}&Timestamp={{current_timestamp}}\n```\n\n### **Python Example**\n\n```python\nimport hashlib\nimport hmac\nimport datetime\nfrom collections import OrderedDict\nfrom urllib.parse import urlencode\n\nPRIVATE_KEY = 'your_private_key'\nPUBLIC_KEY = 'your_public_key'\n\n# Prepare parameters\nparams = {\n    'Key': PUBLIC_KEY,\n    'Timestamp': int(datetime.datetime.utcnow().timestamp()),\n    'category': 5\n}\n\n# Sort and encode parameters\nparams_sorted = OrderedDict(sorted(params.items()))\nparams_encoded = urlencode(params_sorted).encode('utf-8')\n\n# Generate HMAC signature\nhmac_signature = hmac.new(\n    PRIVATE_KEY.encode('utf-8'),\n    params_encoded,\n    hashlib.sha512\n).hexdigest()\n\n# Build headers\nheaders = {\n    'Key': PUBLIC_KEY,\n    'Timestamp': str(params['Timestamp']),\n    'HMAC': hmac_signature\n}\n```"
+        },
+        {
+            "name": "Websocket",
+            "description": "Futuur uses Pusher to deliver real-time data to clients over WebSocket connections.\n\n## Client setup\n\nThis is a JavaScript example. For other languages, see the Pusher client API overview:\nhttps://pusher.com/docs/channels/using_channels/client-api-overview/?ref=docs-index\n\nInclude the Pusher JS client:\n\n```html\n<script src=\"https://js.pusher.com/8.4.0/pusher.min.js\"></script>\n```\n\nInitialize Pusher and subscribe to a channel:\n\n```html\n<script>\n  // Enable pusher logging - don't include this in production\n  Pusher.logToConsole = true;\n\n  var pusher = new Pusher('9011f7eac38e825792d5', {\n    cluster: 'us2'\n  });\n\n  var channel = pusher.subscribe('my-channel');\n  channel.bind('my-event', function(data) {\n    alert(JSON.stringify(data));\n  });\n</script>\n```\n\n## Channels and events\n\nEach event below lists the channel name, event name, and data shape emitted to clients.\n\n### Market channel\n\n- **Channel**: `market`\n- **Event**: `best-prices-change`\n- **Data payload**:\n  - `market_id`: int\n  - `event_id`: int\n  - `currency_mode`: string `play_money` or `real_money`\n  - `best_ask`: (number or null)\n  - `best_bid`: (number or null)\n  - `spread`: `best_ask - best_bid` (number or null)\n\nExample subscription:\n\n```html\n<script>\n  var pusher = new Pusher('9011f7eac38e825792d5', { cluster: 'us2' });\n  var channel = pusher.subscribe('market');\n  channel.bind('best-prices-change', function(data) {\n    console.log('Best prices changed:', data);\n  });\n</script>\n```",
+            "externalDocs": {
+                "description": "Pusher WebSocket Documentation",
+                "url": "https://pusher.com/docs/channels/using_channels/client-api-overview/?ref=docs-index"
+            }
+        }
+    ]
+}

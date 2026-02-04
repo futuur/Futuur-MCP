@@ -38,6 +38,8 @@ class ConvertToUsdTool extends MCPTool<ConvertToUsdInput> {
 
   async execute(input: ConvertToUsdInput) {
     try {
+      // Note: Exchange rates endpoint may not exist in v2.0 API
+      // Attempting to use the endpoint - if it fails, the error will indicate the endpoint doesn't exist
       const rates = await fetchFromFutuur("bets/rates/");
       const usdRates = rates.find((r: { currency: string }) => r.currency === "USD");
       if (!usdRates) {

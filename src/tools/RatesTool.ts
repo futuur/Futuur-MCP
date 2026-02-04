@@ -30,6 +30,8 @@ class RatesTool extends MCPTool<RatesInput> {
 
   async execute(input: RatesInput) {
     try {
+      // Note: Exchange rates endpoint may not exist in v2.0 API
+      // Attempting to use the endpoint - if it fails, the error will indicate the endpoint doesn't exist
       const rates = await fetchFromFutuur("bets/rates/");
       if (input.base_currency) {
         const baseRates = rates.find((r: { currency: string }) => r.currency === input.base_currency);
