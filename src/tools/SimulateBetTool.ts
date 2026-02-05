@@ -164,19 +164,15 @@ Warning: You must provide either 'amount' or 'shares'. If neither or both are pr
 
       // Determine best price from order book
       // For buying (bid), we look at ask levels (what sellers are asking)
-      // For selling (ask), we look at bid levels (what buyers are bidding)
-      const side = "bid"; // We're simulating a purchase, so it's a bid
+      // This tool simulates purchases, so we always use "bid" side
+      const side = "bid" as const;
       const askLevels = orderBook.ask || [];
-      const bidLevels = orderBook.bid || [];
       
-      // Get best available price
+      // Get best available price (best ask price for buying)
       let bestPrice: number | null = null;
-      if (side === "bid" && askLevels.length > 0) {
+      if (askLevels.length > 0) {
         // Best ask price (lowest price sellers are willing to accept)
         bestPrice = askLevels[0].price;
-      } else if (side === "ask" && bidLevels.length > 0) {
-        // Best bid price (highest price buyers are willing to pay)
-        bestPrice = bidLevels[0].price;
       }
 
       // Use provided price or best available price
