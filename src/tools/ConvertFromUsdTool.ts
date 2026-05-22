@@ -36,48 +36,15 @@ class ConvertFromUsdTool extends MCPTool<ConvertFromUsdInput> {
     }
   } as any;
 
-  async execute(input: ConvertFromUsdInput) {
-    try {
-      // Note: Exchange rates endpoint may not exist in v2.0 API
-      // Attempting to use the endpoint - if it fails, the error will indicate the endpoint doesn't exist
-      const rates = await fetchFromFutuur("bets/rates/");
-      const usdRates = rates.find((r: { currency: string }) => r.currency === "USD");
-      if (!usdRates) {
-        throw new Error("USD rates not found");
-      }
-
-      const inUsd = 1 / usdRates.rates[input.to_currency];
-      const rate = input.to_currency === "BTC" ? inUsd / 1000 : inUsd;
-      const result = input.value / rate;
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(
-              {
-                from_amount: input.value,
-                from_currency: "USD",
-                to_amount: result,
-                to_currency: input.to_currency,
-                rate: rate,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error converting from USD: ${String(error)}`,
-          },
-        ],
-      };
-    }
+  async execute(_input: ConvertFromUsdInput) {
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: "Currency conversion is not available in Futuur API v2.0. The exchange rates endpoint (bets/rates/) no longer exists. Supported currencies are: OOM (play money), USDC, USDT, USD.",
+        },
+      ],
+    };
   }
 }
 

@@ -16,6 +16,7 @@ interface MarketsInput {
     | "bet_end_date"
     | "-wagers_count"
     | "-volume";
+  pending_resolution?: boolean;
   resolved_only?: boolean;
   search?: string;
   tag?: string;
@@ -117,6 +118,13 @@ class MarketsTool extends MCPTool<MarketsInput> {
         .default(""),
       description:
         "Field to order results by. Only the following values are allowed: '', 'relevance', '-created_on', 'bet_end_date', '-wagers_count', '-volume'. Use '-volume' for ordering by volume. There is no '-real-volume' option.",
+    },
+    pending_resolution: {
+      type: z.preprocess(
+        (val) => (typeof val === "string" ? val === "true" : val),
+        z.boolean().default(false)
+      ),
+      description: "Filter for markets awaiting resolution",
     },
     resolved_only: {
       type: z.preprocess(
@@ -224,6 +232,9 @@ class MarketsTool extends MCPTool<MarketsInput> {
       }
       if (parsedInput.ordering) {
         queryParams.append("ordering", parsedInput.ordering);
+      }
+      if (parsedInput.pending_resolution !== undefined) {
+        queryParams.append("pending_resolution", parsedInput.pending_resolution.toString());
       }
       if (parsedInput.resolved_only !== undefined) {
         queryParams.append("resolved_only", parsedInput.resolved_only.toString());
