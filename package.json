@@ -1,7 +1,7 @@
 {
-  "name": "futuur-api-mcp",
+  "name": "@futuur/futuur-mcp",
   "version": "1.0.0",
-  "description": "",
+  "description": "MCP server for Futuur prediction markets — browse events, simulate and place bets, manage orders, and track positions",
   "main": "build/index.js",
   "type": "module",
   "engines": {
@@ -16,14 +16,28 @@
     "test:zod-optionality": "node src/test-zod-optionality.js"
   },
   "bin": {
-    "futuur-api-mcp": "./build/index.js"
+    "futuur-mcp": "./build/index.js"
   },
   "files": [
     "build"
   ],
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "futuur",
+    "prediction-markets",
+    "betting",
+    "ai",
+    "claude",
+    "anthropic"
+  ],
+  "author": "Futuur",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/futuur/Futuur-MCP.git"
+  },
+  "homepage": "https://futuur.com",
   "dependencies": {
     "dotenv": "^16.5.0",
     "express": "^4.18.2",

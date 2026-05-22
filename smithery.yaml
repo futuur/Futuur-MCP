@@ -8,14 +8,13 @@ startCommand:
     properties:
       futuurPublicKey:
         type: string
-        description: Your Futuur API public key.
+        description: Your Futuur API public key. Get it from futuur.com → Settings → API.
       futuurPrivateKey:
         type: string
-        description: Your Futuur API private key.
+        description: Your Futuur API private key. Get it from futuur.com → Settings → API.
   commandFunction:
-    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
     |-
-    (config) => ({ command: 'node', args: ['build/index.js'], env: { FUTUUR_PUBLIC_KEY: config.futuurPublicKey, FUTUUR_PRIVATE_KEY: config.futuurPrivateKey } })
+    (config) => ({ command: 'npx', args: ['-y', '@futuur/futuur-mcp'], env: { FUTUUR_PUBLIC_KEY: config.futuurPublicKey, FUTUUR_PRIVATE_KEY: config.futuurPrivateKey } })
   exampleConfig:
-    futuurPublicKey: dummy_public_key
-    futuurPrivateKey: dummy_private_key
+    futuurPublicKey: your_public_key_here
+    futuurPrivateKey: your_private_key_here
