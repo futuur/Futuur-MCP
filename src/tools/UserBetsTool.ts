@@ -59,7 +59,7 @@ class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
       type: z.boolean().optional(),
       description: "Filter by not active wagers (wagers with status sold, won, lost, disabled)"
     },
-    question: {
+    event: {
       type: z.preprocess(
         (val) => {
           if (typeof val === "string") {
@@ -70,7 +70,7 @@ class UserBetsTool extends FutuurBaseTool<UserBetsInput> {
         },
         z.number().optional()
       ),
-      description: "Filter by event ID"
+      description: "Filter by event ID",
     },
     user: {
       type: z.preprocess(

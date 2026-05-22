@@ -11,14 +11,9 @@ class RatesTool extends MCPTool<RatesInput> {
   description = `
     Retrieve the latest exchange rates for supported currencies.
 
-    Common use cases:
-    - When the user wants to see current exchange rates for supported currencies.
-    - When displaying conversion rates in a UI.
-    - When the user asks "What are the current exchange rates?"
-
-    Warning: This tool only provides current exchange rates; it does not perform any currency conversion.
-    Warning: Rates are subject to change and may not reflect real-time market conditions.
-    Warning: Historical rates are not available through this tool.
+    Warning: The exchange rates endpoint (bets/rates/) is not available in API v2.0.
+    This tool is kept for backwards compatibility but will return an error.
+    Futuur v2.0 supports these currencies: OOM (play money), USDC, USDT, USD.
   `;
 
   schema = {
@@ -28,44 +23,15 @@ class RatesTool extends MCPTool<RatesInput> {
     }
   };
 
-  async execute(input: RatesInput) {
-    try {
-      // Note: Exchange rates endpoint may not exist in v2.0 API
-      // Attempting to use the endpoint - if it fails, the error will indicate the endpoint doesn't exist
-      const rates = await fetchFromFutuur("bets/rates/");
-      if (input.base_currency) {
-        const baseRates = rates.find((r: { currency: string }) => r.currency === input.base_currency);
-        if (!baseRates) {
-          throw new Error(`Rates for ${input.base_currency} not found`);
-        }
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(baseRates, null, 2),
-            },
-          ],
-        };
-      }
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(rates, null, 2),
-          },
-        ],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Error getting exchange rates: ${String(error)}`,
-          },
-        ],
-      };
-    }
+  async execute(_input: RatesInput) {
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: "The exchange rates endpoint (bets/rates/) is not available in Futuur API v2.0. Supported currencies are: OOM (play money), USDC, USDT, USD.",
+        },
+      ],
+    };
   }
 }
 

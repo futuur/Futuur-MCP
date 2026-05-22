@@ -25,7 +25,7 @@ class MeTool extends FutuurBaseTool<MeInput> {
 
   async execute() {
     try {
-      const data = await fetchFromFutuur("me");
+      const data = await fetchFromFutuur("me/");
       return {
         content: [
           {
