@@ -26,22 +26,13 @@ Smithery will prompt you for your API keys and handle the rest.
 
 ---
 
-## Manual setup
+## Manual setup (npx — no clone needed)
 
 ### 1. Get API keys
 
 Log in to [futuur.com](https://futuur.com) → Settings → API → generate a public/private key pair.
 
-### 2. Clone and build
-
-```bash
-git clone https://github.com/futuur/Futuur-MCP.git
-cd Futuur-MCP
-npm install
-npm run build
-```
-
-### 3. Configure your MCP client
+### 2. Configure your MCP client
 
 **Claude Desktop** — edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
@@ -49,8 +40,8 @@ npm run build
 {
   "mcpServers": {
     "futuur": {
-      "command": "node",
-      "args": ["/absolute/path/to/Futuur-MCP/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "@futuur/futuur-mcp"],
       "env": {
         "FUTUUR_PUBLIC_KEY": "your_public_key_here",
         "FUTUUR_PRIVATE_KEY": "your_private_key_here"
@@ -63,7 +54,7 @@ npm run build
 **Claude Code** (CLI) — run once to register the server:
 
 ```bash
-claude mcp add futuur node /absolute/path/to/Futuur-MCP/build/index.js \
+claude mcp add futuur -- npx -y @futuur/futuur-mcp \
   -e FUTUUR_PUBLIC_KEY=your_public_key_here \
   -e FUTUUR_PRIVATE_KEY=your_private_key_here
 ```
@@ -76,8 +67,8 @@ Or add to `.claude/settings.json` under `"mcpServers"` using the same format as 
 {
   "mcpServers": {
     "futuur": {
-      "command": "node",
-      "args": ["/absolute/path/to/Futuur-MCP/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "@futuur/futuur-mcp"],
       "env": {
         "FUTUUR_PUBLIC_KEY": "your_public_key_here",
         "FUTUUR_PRIVATE_KEY": "your_private_key_here"
