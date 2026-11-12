@@ -13,13 +13,23 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server for [Futuur](
 
 ## Setup
 
-Claude Code:
+**Cursor**
+
+[![Add Futuur to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=futuur&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkBmdXR1dXIvZnV0dXVyLW1jcCJdLCJlbnYiOnsiRlVUVVVSX1BVQkxJQ19LRVkiOiIiLCJGVVRVVVJfUFJJVkFURV9LRVkiOiIifX0%3D)
+
+The button adds the server with empty keys; fill them in under Cursor Settings → MCP to use account and trading tools.
+
+**Claude Desktop**
+
+Download `futuur.mcpb` from the [latest release](https://github.com/futuur/Futuur-MCP/releases/latest) and open it: Claude Desktop installs it as an extension and asks for your API keys (optional).
+
+**Claude Code**
 
 ```bash
 claude mcp add futuur -e FUTUUR_PUBLIC_KEY=your_public_key -e FUTUUR_PRIVATE_KEY=your_private_key -- npx -y @futuur/futuur-mcp
 ```
 
-Any other MCP client (Claude Desktop, Cursor, ...), in its `mcpServers` configuration:
+**Any other MCP client** (VS Code, Windsurf, Cline, ...), in its `mcpServers` configuration:
 
 ```json
 {
@@ -33,6 +43,8 @@ Any other MCP client (Claude Desktop, Cursor, ...), in its `mcpServers` configur
   }
 }
 ```
+
+The server is listed in the [official MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.futuur/futuur-mcp`.
 
 | Variable | Purpose |
 |---|---|
@@ -83,7 +95,14 @@ npm test
 node scripts/smoke.mjs --live
 ```
 
-`npm test` runs the unit tests with a mocked API. The smoke script starts the built server over stdio, checks the handshake and tool metadata, and with `--live` makes a few read-only calls to the production API. See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common problems.
+`npm test` runs the unit tests with a mocked API. The smoke script starts the built server over stdio, checks the handshake and tool metadata, and with `--live` makes a few read-only calls to the production API. `npm run mcpb` builds the Claude Desktop extension into `dist/futuur.mcpb`. See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common problems.
+
+## Releasing
+
+1. Bump `version` in `package.json`, `server.json` (twice) and `manifest.json`; `npm test` fails if they disagree.
+2. Merge, then push a tag: `git tag v2.0.2 && git push origin v2.0.2`.
+
+The Release workflow publishes to npm (when an `NPM_TOKEN` secret is set; otherwise run `npm publish` first), to the MCP Registry, and attaches `futuur.mcpb` to a GitHub release. [docs/MARKETPLACES.md](docs/MARKETPLACES.md) tracks the other directories.
 
 ## License
 

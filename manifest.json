@@ -1,0 +1,158 @@
+{
+  "manifest_version": "0.3",
+  "name": "futuur",
+  "display_name": "Futuur",
+  "version": "2.0.1",
+  "description": "Futuur prediction markets: browse events and prices, simulate and place orders, track positions.",
+  "long_description": "Browse Futuur prediction markets from Claude: search events, read prices, order books and price history, simulate an order against the live book, place and cancel orders, and review your positions and balances. Market data works without credentials. Account and trading tools use your Futuur API keys, which stay on your computer and are sent only to the Futuur API. Tools that move your balance are marked so Claude asks before running them.",
+  "author": {
+    "name": "Futuur",
+    "url": "https://futuur.com"
+  },
+  "homepage": "https://futuur.com",
+  "documentation": "https://docs.futuur.com/guides/mcp",
+  "support": "https://github.com/futuur/Futuur-MCP/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/futuur/Futuur-MCP.git"
+  },
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "build/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/build/index.js"
+      ],
+      "env": {
+        "FUTUUR_PUBLIC_KEY": "${user_config.public_key}",
+        "FUTUUR_PRIVATE_KEY": "${user_config.private_key}"
+      }
+    }
+  },
+  "user_config": {
+    "public_key": {
+      "type": "string",
+      "title": "Futuur API public key",
+      "description": "Optional for browsing markets; needed for account and trading tools. Create a key pair at futuur.com → Settings → API keys.",
+      "required": false,
+      "sensitive": false,
+      "default": ""
+    },
+    "private_key": {
+      "type": "string",
+      "title": "Futuur API private key",
+      "description": "Optional for browsing markets; needed for account and trading tools. Create a key pair at futuur.com → Settings → API keys.",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    }
+  },
+  "tools": [
+    {
+      "name": "get_markets",
+      "description": "Search events and markets"
+    },
+    {
+      "name": "get_market_details",
+      "description": "Get event details"
+    },
+    {
+      "name": "get_price_history",
+      "description": "Get price history"
+    },
+    {
+      "name": "get_order_book",
+      "description": "Get order book"
+    },
+    {
+      "name": "get_categories",
+      "description": "List categories"
+    },
+    {
+      "name": "get_category_details",
+      "description": "Get category details"
+    },
+    {
+      "name": "get_exchange_rates",
+      "description": "Get exchange rates"
+    },
+    {
+      "name": "convert_to_usd",
+      "description": "Convert amount to USD"
+    },
+    {
+      "name": "convert_from_usd",
+      "description": "Convert USD to another currency"
+    },
+    {
+      "name": "get_user_profile",
+      "description": "Get my profile"
+    },
+    {
+      "name": "get_balances",
+      "description": "Get my balances"
+    },
+    {
+      "name": "get_user_ranking",
+      "description": "Get my leaderboard ranking"
+    },
+    {
+      "name": "get_bet_simulation",
+      "description": "Simulate an order"
+    },
+    {
+      "name": "place_bet",
+      "description": "Place an order"
+    },
+    {
+      "name": "list_orders",
+      "description": "List my orders"
+    },
+    {
+      "name": "cancel_order",
+      "description": "Cancel an order"
+    },
+    {
+      "name": "cancel_all_orders",
+      "description": "Cancel all open orders"
+    },
+    {
+      "name": "get_user_bets",
+      "description": "List my bets"
+    },
+    {
+      "name": "get_wager_details",
+      "description": "Get wager details"
+    },
+    {
+      "name": "get_partial_sell_amount",
+      "description": "Simulate selling shares"
+    },
+    {
+      "name": "sell_bet",
+      "description": "Sell a bet"
+    }
+  ],
+  "keywords": [
+    "futuur",
+    "prediction markets",
+    "trading",
+    "forecasting"
+  ],
+  "license": "ISC",
+  "privacy_policies": [
+    "https://help.futuur.com/Privacy-Policy-fbd0af05edba4027b62780f8a21a8ae6"
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  }
+}

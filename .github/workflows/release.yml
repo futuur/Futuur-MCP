@@ -1,0 +1,78 @@
+name: Release
+
+# Push a tag like v2.0.1 to publish that version: npm (if not already there), the official MCP
+# Registry, and a GitHub release carrying the Claude Desktop extension (futuur.mcpb).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  id-token: write # MCP Registry login (GitHub OIDC proves the futuur org namespace)
+  contents: write # create the GitHub release
+
+env:
+  MCP_PUBLISHER_VERSION: v1.8.1
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: node scripts/smoke.mjs
+
+      - name: Check the tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $version" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Publish to npm (skipped when this version is already published)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if npm view "@futuur/futuur-mcp@$VERSION" version >/dev/null 2>&1; then
+            echo "@futuur/futuur-mcp@$VERSION is already on npm"
+          elif [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "@futuur/futuur-mcp@$VERSION is not on npm and no NPM_TOKEN secret is set." >&2
+            echo "Publish it by hand (npm publish) and re-run this workflow, or add the secret." >&2
+            exit 1
+          else
+            npm publish --ignore-scripts
+          fi
+
+      - name: Install mcp-publisher
+        uses: sigstore/cosign-installer@v3
+      - run: |
+          base="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          asset="mcp-publisher_linux_amd64.tar.gz"
+          curl -fsSL -o "$asset" "$base/$asset"
+          curl -fsSL -o "$asset.sigstore.json" "$base/$asset.sigstore.json"
+          cosign verify-blob "$asset" \
+            --bundle "$asset.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          tar xzf "$asset" mcp-publisher
+
+      - name: Publish to the MCP Registry
+        run: |
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
+
+      - name: Build the Claude Desktop extension
+        run: node scripts/build-mcpb.mjs
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/futuur.mcpb --title "$GITHUB_REF_NAME" --generate-notes

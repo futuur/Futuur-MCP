@@ -1,6 +1,7 @@
 {
   "name": "@futuur/futuur-mcp",
-  "version": "2.0.0",
+  "version": "2.0.1",
+  "mcpName": "io.github.futuur/futuur-mcp",
   "description": "MCP server for Futuur prediction markets: browse events, simulate and place orders, and track positions",
   "main": "build/index.js",
   "type": "module",
@@ -12,7 +13,8 @@
     "start": "node build/index.js",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
-    "prepublishOnly": "npm run build && npm test"
+    "prepublishOnly": "npm run build && npm test",
+    "mcpb": "npm run build && node scripts/build-mcpb.mjs"
   },
   "bin": {
     "futuur-mcp": "build/index.js"
