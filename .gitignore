@@ -86,3 +86,4 @@ Desktop.ini
 
 # Debug logs
 debug.log 
+dist/

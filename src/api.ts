@@ -1,7 +1,9 @@
 import { createHmac } from "node:crypto";
 
+import { VERSION } from "./version.js";
+
 export const DEFAULT_BASE_URL = "https://api.futuur.com/v2.0/";
-export const USER_AGENT = "futuur-mcp/2.0.0 (+https://github.com/futuur/Futuur-MCP)";
+export const USER_AGENT = `futuur-mcp/${VERSION} (+https://github.com/futuur/Futuur-MCP)`;
 const TIMEOUT_MS = 30_000;
 
 export type Primitive = string | number | boolean | null | undefined;

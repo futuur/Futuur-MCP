@@ -2,8 +2,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 
 import { registerTools } from "./tool.js";
 import { allTools } from "./tools/index.js";
-
-export const SERVER_VERSION = "2.0.0";
+import { VERSION } from "./version.js";
 
 const INSTRUCTIONS = `\
 Futuur is a prediction market. These tools call the Futuur public API (v2.0).
@@ -23,7 +22,7 @@ cancel only after they explicitly confirm. Orders move real balances and cannot 
 
 export function createServer(): McpServer {
   const server = new McpServer(
-    { name: "futuur", title: "Futuur", version: SERVER_VERSION, websiteUrl: "https://futuur.com" },
+    { name: "futuur", title: "Futuur", version: VERSION, websiteUrl: "https://futuur.com" },
     { capabilities: { tools: {} }, instructions: INSTRUCTIONS },
   );
   registerTools(server, allTools);
