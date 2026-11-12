@@ -1,15 +1,7 @@
 #!/usr/bin/env node
-import { MCPServer } from "mcp-framework";
-import { configureFutuurApi } from "./utils/api.js";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
 
-configureFutuurApi({
-  publicKey: process.env.FUTUUR_PUBLIC_KEY,
-  privateKey: process.env.FUTUUR_PRIVATE_KEY,
-});
+import { createServer } from "./server.js";
 
-const server = new MCPServer({
-  name: "Futuur API Integration",
-  version: "1.0.0",
-});
-
-server.start();
+// stdout carries the protocol; anything for humans goes to stderr.
+serveStdio(createServer);

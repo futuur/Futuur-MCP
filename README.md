@@ -1,172 +1,90 @@
-# Futuur MCP Server
+# Futuur MCP server
 
-Model Context Protocol (MCP) server for the [Futuur](https://futuur.com) prediction markets API. Gives Claude (and any MCP-compatible client) the ability to browse markets, simulate and place bets, manage orders, and track wager positions.
+A [Model Context Protocol](https://modelcontextprotocol.io) server for [Futuur](https://futuur.com) prediction markets. It lets Claude and other MCP clients browse events and prices, simulate and place orders, and track positions through the Futuur public API (`https://api.futuur.com/v2.0/`).
 
-<div align="center">
+- Built on the official MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), which implements the 2026-07-28 specification and still serves older clients.
+- Every tool has a title, typed arguments, structured results and read-only / destructive annotations, so clients can ask for confirmation before anything that moves money.
+- Browsing works without credentials. Account and trading tools need your Futuur API keys.
 
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-[![smithery badge](https://smithery.ai/badge/@futuur/futuur-mcp)](https://smithery.ai/server/@futuur/futuur-mcp)
+## Requirements
 
-</div>
+- Node.js 20 or newer
+- Futuur API keys for account and trading tools: futuur.com → Settings → API keys
 
----
+## Setup
 
-## Quick start (recommended — Smithery)
+Claude Code:
 
 ```bash
-# Claude Desktop
-npx -y @smithery/cli install @futuur/futuur-mcp --client claude
-
-# Cursor
-npx -y @smithery/cli install @futuur/futuur-mcp --client cursor
+claude mcp add futuur -e FUTUUR_PUBLIC_KEY=your_public_key -e FUTUUR_PRIVATE_KEY=your_private_key -- npx -y @futuur/futuur-mcp
 ```
 
-Smithery will prompt you for your API keys and handle the rest.
-
----
-
-## Manual setup (npx — no clone needed)
-
-### 1. Get API keys
-
-Log in to [futuur.com](https://futuur.com) → Settings → API → generate a public/private key pair.
-
-### 2. Configure your MCP client
-
-**Claude Desktop** — edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+Any other MCP client (Claude Desktop, Cursor, ...), in its `mcpServers` configuration:
 
 ```json
 {
-  "mcpServers": {
-    "futuur": {
-      "command": "npx",
-      "args": ["-y", "@futuur/futuur-mcp"],
-      "env": {
-        "FUTUUR_PUBLIC_KEY": "your_public_key_here",
-        "FUTUUR_PRIVATE_KEY": "your_private_key_here"
-      }
+  "futuur": {
+    "command": "npx",
+    "args": ["-y", "@futuur/futuur-mcp"],
+    "env": {
+      "FUTUUR_PUBLIC_KEY": "your_public_key",
+      "FUTUUR_PRIVATE_KEY": "your_private_key"
     }
   }
 }
 ```
 
-**Claude Code** (CLI) — run once to register the server:
+| Variable | Purpose |
+|---|---|
+| `FUTUUR_PUBLIC_KEY`, `FUTUUR_PRIVATE_KEY` | API key pair. Optional for browsing, required for account and trading tools. |
+| `FUTUUR_API_BASE_URL` | Override the API base URL (default `https://api.futuur.com/v2.0/`). |
 
-```bash
-claude mcp add futuur -- npx -y @futuur/futuur-mcp \
-  -e FUTUUR_PUBLIC_KEY=your_public_key_here \
-  -e FUTUUR_PRIVATE_KEY=your_private_key_here
-```
+Your keys stay on your machine: the server runs locally over stdio and only talks to the Futuur API.
 
-Or add to `.claude/settings.json` under `"mcpServers"` using the same format as Claude Desktop above.
+## Tools
 
-**Cursor** — add to `.cursor/mcp.json`:
+Market data (no keys needed):
 
-```json
-{
-  "mcpServers": {
-    "futuur": {
-      "command": "npx",
-      "args": ["-y", "@futuur/futuur-mcp"],
-      "env": {
-        "FUTUUR_PUBLIC_KEY": "your_public_key_here",
-        "FUTUUR_PRIVATE_KEY": "your_private_key_here"
-      }
-    }
-  }
-}
-```
+| Tool | What it does |
+|---|---|
+| `get_markets` | List and search events, with category, tag, status, date and ordering filters |
+| `get_market_details` | One event with all of its markets (outcomes) |
+| `get_price_history` | Price history of an event's markets |
+| `get_order_book` | Bids and asks for one market |
+| `get_categories`, `get_category_details` | Browse categories |
+| `get_exchange_rates`, `convert_to_usd`, `convert_from_usd` | Currency rates and indicative conversions |
 
-### 4. Restart your client
+Account and positions (keys required):
 
-Claude Desktop / Cursor need a full restart after editing config files.
+| Tool | What it does |
+|---|---|
+| `get_user_profile`, `get_balances`, `get_user_ranking` | Profile, balances per currency, leaderboard position |
+| `get_user_bets`, `get_wager_details` | Positions and their purchase/sale history |
+| `get_partial_sell_amount` | Estimate what a position would sell for |
 
----
+Trading (keys required; these change your balance):
 
-## Available tools
+| Tool | What it does |
+|---|---|
+| `get_bet_simulation` | Preview a buy or sell against the live order book. Places nothing. |
+| `place_bet` | Place a limit or market order |
+| `sell_bet` | Sell all or part of a position |
+| `list_orders` | Your open and past orders |
+| `cancel_order`, `cancel_all_orders` | Cancel resting orders |
 
-### Market discovery
-
-| Tool | Description |
-|------|-------------|
-| `get_markets` | List/search events with filters (category, tag, status, ordering, etc.) |
-| `get_market_details` | Full details for a single event including all nested markets |
-| `get_categories` | List market categories (legacy v1 endpoint) |
-| `get_category_details` | Details for a specific category |
-| `get_price_history` | Historical price data for an event (`day`, `week`, `month`, `year`, `all_time`) |
-
-### Account
-
-| Tool | Description |
-|------|-------------|
-| `get_user_profile` | Authenticated user profile and balances |
-| `get_user_ranking` | Your position on the leaderboard |
-
-### Trading
-
-| Tool | Description |
-|------|-------------|
-| `get_bet_simulation` | Preview a limit order (cost/shares) without placing it |
-| `place_bet` | Execute a limit order using a confirmed simulation payload |
-| `list_orders` | List your open/filled/cancelled orders |
-| `cancel_order` | Cancel an open order by ID |
-
-### Positions (wagers)
-
-| Tool | Description |
-|------|-------------|
-| `get_user_bets` | List your wager positions with optional filters |
-| `get_wager_details` | Full details for a single wager |
-| `get_partial_sell_amount` | Simulate proceeds from selling N shares |
-| `sell_bet` | Sell all or part of a wager position |
-
----
-
-## Typical workflow with Claude
-
-```
-1. "Show me the top 10 markets by volume"           → get_markets
-2. "Give me details on event #1234"                 → get_market_details
-3. "Simulate buying 100 OOM on the Yes outcome"     → get_bet_simulation (requires event_id + market_id)
-4. "Looks good, place the bet"                      → place_bet
-5. "Show my open positions"                         → get_user_bets
-6. "How much would I get if I sold 50 shares?"      → get_partial_sell_amount
-7. "Sell them"                                      → sell_bet
-```
-
-> **Tip:** Use `play_money` mode (`currency_mode: "play_money"`) to test without risking real funds. OOM is the play money currency.
-
----
-
-## Authentication
-
-All authenticated requests use HMAC-SHA512 signatures. The server handles this automatically — just provide your public and private keys via environment variables (`FUTUUR_PUBLIC_KEY` / `FUTUUR_PRIVATE_KEY`).
-
-Public endpoints (events listing, event details) do not require authentication.
-
----
-
-## API reference
-
-Full API documentation: [docs.futuur.com](https://docs.futuur.com)  
-OpenAPI schema (machine-readable): [api.futuur.com/docs/schema/](https://api.futuur.com/docs/schema/)
-
----
+Vocabulary: an *event* is a question; its *markets* are the outcomes, each priced between 0 and 1. `bid` buys and `ask` sells; `long` is the Yes side of a market and `short` is the No side. `OOM` is play money; `USDC`, `USDT` and `USD` are real money. Real-money trading through the API has to be enabled for your account.
 
 ## Development
 
 ```bash
-npm run dev      # Run with tsx (hot reload)
-npm run build    # Compile TypeScript
-npm run start    # Run compiled build
-npm test         # Run tests
+npm install
+npm run build
+npm test
+node scripts/smoke.mjs --live
 ```
 
-## Troubleshooting
+`npm test` runs the unit tests with a mocked API. The smoke script starts the built server over stdio, checks the handshake and tool metadata, and with `--live` makes a few read-only calls to the production API. See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common problems.
 
-See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+## License
 
----
-
-<div align="center">Made with ❤️ by the Futuur Team</div>
+ISC

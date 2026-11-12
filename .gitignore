@@ -3,7 +3,6 @@ node_modules/
 npm-debug.log
 yarn-debug.log
 yarn-error.log
-package-lock.json
 yarn.lock
 
 # Build outputs
@@ -13,9 +12,7 @@ out/
 *.tsbuildinfo
 
 # TypeScript
-*.js
 *.js.map
-*.d.ts
 
 # Environment variables
 .env
