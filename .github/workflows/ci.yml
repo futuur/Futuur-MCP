@@ -21,3 +21,14 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: node scripts/smoke.mjs
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t futuur-mcp .
+      - name: The container answers an MCP handshake
+        run: |
+          request='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}'
+          echo "$request" | docker run -i --rm futuur-mcp | tee response.json
+          grep -q '"name":"futuur"' response.json
