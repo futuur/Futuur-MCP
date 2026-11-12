@@ -1,81 +1,21 @@
-# Troubleshooting Guide
+# Troubleshooting
 
-## Futuur API Authentication Issues
+**"This tool needs Futuur API keys"**
+Set `FUTUUR_PUBLIC_KEY` and `FUTUUR_PRIVATE_KEY` in the MCP server's `env` block, then restart the client. Market data tools work without them.
 
-### Common Symptoms
-- 403 Forbidden errors when calling authenticated endpoints
-- Tools work in standalone execution but fail through MCP
-- Authentication headers appear to be generated correctly but requests still fail
+**401 or 403 from the API**
+- The key pair is wrong or inactive: generate a new pair at futuur.com → Settings → API keys.
+- The system clock is off: requests are signed with a timestamp.
+- Real-money orders also need real-money API trading enabled for the account and a confirmed email.
 
-### Debug Checklist
+**"shares must be greater than 0.02" / "price must be a whole number of cents"**
+Order sizes have at most 2 decimals and prices are whole cents between 0.01 and 0.99.
 
-1. **Verify Environment Variables**
-   ```bash
-   # Check that API keys are properly set
-   echo $FUTUUR_PUBLIC_KEY
-   echo $FUTUUR_PRIVATE_KEY
-   ```
-   - Keys should be non-empty strings
-   - Public key should start with hex characters
-   - Private key should be a long secret string
+**A market order filled only partly**
+Market orders take what the book offers and drop the rest. Use `get_bet_simulation` first, or place a limit order with a `price` so the remainder rests on the book.
 
-2. **Check MCP Framework Version**
-   ```bash
-   npm list mcp-framework
-   ```
-   - Version 0.2.13 has known authentication header issues
-   - Version 0.2.14+ should not require the patch
-   - The patch is automatically applied for problematic versions
+**The server does not start**
+It needs Node.js 20 or newer (`node --version`). Run `npx -y @futuur/futuur-mcp` in a terminal: it should wait silently for input; any error is printed to stderr.
 
-3. **Monitor Startup Health Check**
-   ```
-   [HEALTH] Testing Futuur API authentication...
-   ✅ [HEALTH] Futuur authentication working
-   ```
-   - Should see success message on startup
-   - Warning messages indicate configuration issues
-
-### Manual Testing
-
-Test authentication outside MCP context:
-```javascript
-import { buildAuthHeaders } from './src/utils/api.js';
-
-const headers = buildAuthHeaders({ test: 'payload' });
-const response = await fetch('https://api.futuur.com/api/v1/me', { headers });
-console.log('Status:', response.status); // Should be 200
-```
-
-### Patch Status
-
-The Futuur authentication patch is automatically applied when:
-- MCP Framework version < 0.2.14
-- Tools extend `FutuurBaseTool` (recommended)
-
-Look for these log messages:
-```
-[PATCH] MCP Framework 0.2.13 detected - applying Futuur auth patch
-[PATCH] Futuur authentication patch applied successfully
-```
-
-### Known Issues
-
-1. **MCP Framework 0.2.13**: Authentication headers are stripped/modified
-   - **Solution**: Automatic patch applied via `FutuurBaseTool`
-   - **Status**: Temporary workaround until framework is fixed
-
-2. **Missing Environment Variables**: API keys not loaded
-   - **Solution**: Ensure `.env` file exists with correct keys
-   - **Check**: Startup health check should report the issue
-
-3. **Network Connectivity**: Cannot reach Futuur API
-   - **Solution**: Check internet connection and firewall settings
-   - **Test**: Manual `curl` request to verify connectivity
-
-### Getting Help
-
-If you continue experiencing issues:
-1. Check the startup health check output
-2. Verify your API keys in the Futuur dashboard
-3. Test authentication manually outside MCP
-4. Report issues with full logs and MCP Framework version 
+**Checking the server by hand**
+`node scripts/smoke.mjs --live` from a checkout runs the handshake, lists the tools and makes read-only calls to the API.

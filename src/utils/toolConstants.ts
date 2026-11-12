@@ -1,1 +1,0 @@
-export const SIMULATION_PAYLOAD_SOURCE_MARKER = "futuur_simulation_payload_v1"; 

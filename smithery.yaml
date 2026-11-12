@@ -2,19 +2,16 @@ startCommand:
   type: stdio
   configSchema:
     type: object
-    required:
-      - futuurPublicKey
-      - futuurPrivateKey
     properties:
       futuurPublicKey:
         type: string
-        description: Your Futuur API public key. Get it from futuur.com → Settings → API.
+        description: Your Futuur API public key. Optional for browsing markets; needed for account and trading tools. Get it from futuur.com → Settings → API keys.
       futuurPrivateKey:
         type: string
-        description: Your Futuur API private key. Get it from futuur.com → Settings → API.
+        description: Your Futuur API private key. Optional for browsing markets; needed for account and trading tools. Get it from futuur.com → Settings → API keys.
   commandFunction:
     |-
-    (config) => ({ command: 'npx', args: ['-y', '@futuur/futuur-mcp'], env: { FUTUUR_PUBLIC_KEY: config.futuurPublicKey, FUTUUR_PRIVATE_KEY: config.futuurPrivateKey } })
+    (config) => ({ command: 'npx', args: ['-y', '@futuur/futuur-mcp'], env: { FUTUUR_PUBLIC_KEY: config.futuurPublicKey ?? '', FUTUUR_PRIVATE_KEY: config.futuurPrivateKey ?? '' } })
   exampleConfig:
     futuurPublicKey: your_public_key_here
     futuurPrivateKey: your_private_key_here
