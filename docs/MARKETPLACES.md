@@ -10,7 +10,7 @@ Where the Futuur MCP server is listed, and how each listing is updated. Maintain
 | Anthropic extension directory | Manual submission of the `.mcpb` | Not submitted |
 | Cursor | "Add to Cursor" button in the README and docs; cursor.directory listing | Button live; directory not submitted |
 | Smithery | `smithery.yaml`; claim the repo on smithery.ai | Not claimed |
-| Docker MCP Catalog | PR to `docker/mcp-registry` | Not submitted |
+| Docker MCP Catalog | PR to `docker/mcp-registry` | Submitted: [docker/mcp-registry#7013](https://github.com/docker/mcp-registry/pull/7013) |
 | Cline Marketplace | Issue on `cline/mcp-marketplace` | Not submitted |
 | Glama, mcp.so | Web forms (repository URL) | Not submitted |
 | PulseMCP | Reads the official registry; its own form is paused | Follows the registry |
