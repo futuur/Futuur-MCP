@@ -5,8 +5,8 @@ Where the Futuur MCP server is listed, and how each listing is updated. Maintain
 | Directory | How it gets there | Status |
 |---|---|---|
 | npm (`@futuur/futuur-mcp`) | Release workflow, or `npm publish` | Live |
-| Official MCP Registry (`io.github.futuur/futuur-mcp`) | Release workflow (`server.json`), on every `v*` tag | Pending first tagged release |
-| Claude Desktop extension (`futuur.mcpb`) | Release workflow attaches it to the GitHub release | Pending first tagged release |
+| Official MCP Registry (`io.github.futuur/futuur-mcp`) | Release workflow (`server.json`), on every `v*` tag | Live since v2.0.1 |
+| Claude Desktop extension (`futuur.mcpb`) | Release workflow attaches it to the GitHub release | Live since v2.0.1 |
 | Anthropic extension directory | Manual submission of the `.mcpb` | Not submitted |
 | Cursor | "Add to Cursor" button in the README and docs; cursor.directory listing | Button live; directory not submitted |
 | Smithery | `smithery.yaml`; claim the repo on smithery.ai | Not claimed |
